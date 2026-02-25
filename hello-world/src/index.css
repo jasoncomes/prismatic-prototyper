@@ -1,0 +1,316 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-foreground-active: var(--sidebar-foreground-active);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-active-indicator: var(--sidebar-active-indicator);
+
+  /* Prismatic Brand Colors */
+  --color-brand-black: var(--brand-black);
+  --color-brand-deep-purple: var(--brand-deep-purple);
+  --color-brand-periwinkle: var(--brand-periwinkle);
+  --color-brand-mint: var(--brand-mint);
+
+  /* Prismatic Accent Colors */
+  --color-brand-blue-purple: var(--brand-blue-purple);
+  --color-brand-blue-iris: var(--brand-blue-iris);
+  --color-brand-turquoise: var(--brand-turquoise);
+  --color-brand-cyan: var(--brand-cyan);
+
+  /* Interactive Colors */
+  --color-interactive-primary: var(--interactive-primary);
+  --color-interactive-primary-hover: var(--interactive-primary-hover);
+  --color-interactive-primary-active: var(--interactive-primary-active);
+  --color-interactive-primary-disabled: var(--interactive-primary-disabled);
+  --color-interactive-secondary: var(--interactive-secondary);
+  --color-interactive-secondary-hover: var(--interactive-secondary-hover);
+  --color-interactive-secondary-active: var(--interactive-secondary-active);
+  --color-interactive-secondary-disabled: var(--interactive-secondary-disabled);
+  --color-interactive-error: var(--interactive-error);
+
+  /* Builder/Dark theme */
+  --color-builder-bg: var(--builder-bg);
+  --color-builder-border: var(--builder-border);
+  --color-builder-adornment-bg: var(--builder-adornment-bg);
+  --color-builder-text: var(--builder-text);
+  --color-builder-text-muted: var(--builder-text-muted);
+  --color-builder-text-placeholder: var(--builder-text-placeholder);
+  --color-builder-required: var(--builder-required);
+  --color-builder-chip-bg: var(--builder-chip-bg);
+  --color-builder-chip-border: var(--builder-chip-border);
+
+  /* Prismatic Gray Scale */
+  --color-gray-01: var(--gray-01);
+  --color-gray-02: var(--gray-02);
+  --color-gray-03: var(--gray-03);
+  --color-gray-04: var(--gray-04);
+  --color-gray-05: var(--gray-05);
+  --color-gray-06: var(--gray-06);
+  --color-gray-07: var(--gray-07);
+  --color-gray-08: var(--gray-08);
+  --color-gray-09: var(--gray-09);
+  --color-gray-10: var(--gray-10);
+  --color-gray-11: var(--gray-11);
+  --color-gray-12: var(--gray-12);
+
+  /* Neutral Palette */
+  --color-neutral-50: var(--neutral-50);
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-300: var(--neutral-300);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+
+  /* UI Border Tokens */
+  --color-ui-border-rest: var(--ui-border-rest);
+  --color-ui-border-hover: var(--ui-border-hover);
+  --color-ui-border-focus: var(--ui-border-focus);
+  --color-ui-border-error: var(--ui-border-error);
+  --color-ui-border-disabled: var(--ui-border-disabled);
+
+  /* Text Tokens */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-disabled: var(--text-disabled);
+
+  /* Typography */
+  --font-size-h1: var(--font-size-h1);
+  --font-size-h2: var(--font-size-h2);
+  --font-size-h3: var(--font-size-h3);
+  --font-size-h4: var(--font-size-h4);
+  --font-size-h5: var(--font-size-h5);
+  --font-size-h6: var(--font-size-h6);
+  --font-size-body1: var(--font-size-body1);
+  --font-size-body2: var(--font-size-body2);
+
+  /* Prismatic Shadows */
+  --shadow-default: var(--shadow-default);
+  --shadow-alt: var(--shadow-alt);
+
+}
+
+:root {
+  --radius: 0.25rem;
+
+  /* Prismatic Primary Colors */
+  --brand-black: #191818;
+  --brand-deep-purple: #232657;
+  --brand-periwinkle: #5662A7;
+  --brand-mint: #2ECE95;
+
+  /* Prismatic Accent Colors */
+  --brand-blue-purple: #6078E2;
+  --brand-blue-iris: #5E92E1;
+  --brand-turquoise: #4A93AE;
+  --brand-cyan: #65D5DA;
+
+  /* Prismatic Gray Scale */
+  --gray-01: #FDFEFE;
+  --gray-02: #FAFBFC;
+  --gray-03: #F8F9FA;
+  --gray-04: #E7EBEF;
+  --gray-05: #D6DEE3;
+  --gray-06: #CBD5DC;
+  --gray-07: #BDC7CF;
+  --gray-08: #5F666A;
+  --gray-09: #353A3D;
+  --gray-10: #2C3133;
+  --gray-11: #24292A;
+  --gray-12: #1B2021;
+
+  /* Neutral Palette (MUI pattern) */
+  --neutral-50: #F1F4F6;
+  --neutral-100: #E3E8EC;
+  --neutral-200: #D0D9DF;
+  --neutral-300: #C4CFD7;
+  --neutral-400: #9A9EB6;
+  --neutral-500: #565A72;
+
+  /* UI Border Tokens (MUI pattern) */
+  --ui-border-rest: var(--neutral-400);
+  --ui-border-hover: var(--neutral-500);
+  --ui-border-focus: var(--brand-cyan);
+  --ui-border-error: var(--interactive-error);
+  --ui-border-disabled: var(--neutral-200);
+
+  /* Text Opacity Tokens (MUI pattern) */
+  --text-primary: rgba(25, 24, 24, 0.85);
+  --text-secondary: rgba(25, 24, 24, 0.70);
+  --text-disabled: rgba(25, 24, 24, 0.38);
+
+  /* Typography Tokens (MUI pattern) */
+  --font-size-h1: 2rem;
+  --font-size-h2: 1.625rem;
+  --font-size-h3: 1.375rem;
+  --font-size-h4: 1.188rem;
+  --font-size-h5: 1rem;
+  --font-size-h6: 0.9375rem;
+  --font-size-body1: 0.938rem;
+  --font-size-body2: 0.875rem;
+
+  /* Prismatic Shadows */
+  --shadow-default: 4px 4px 12px 0px rgba(25, 24, 24, 0.12);
+  --shadow-alt: 0px 4px 24px 4px rgba(0, 0, 0, 0.16);
+
+  /* shadcn semantic tokens mapped to Prismatic */
+  --background: var(--gray-01);
+  --foreground: var(--brand-black);
+  --card: var(--gray-01);
+  --card-foreground: var(--brand-black);
+  --popover: var(--gray-01);
+  --popover-foreground: var(--brand-black);
+  --primary: var(--brand-deep-purple);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--brand-periwinkle);
+  --secondary-foreground: #FFFFFF;
+  --muted: var(--gray-03);
+  --muted-foreground: var(--gray-08);
+  --accent: var(--brand-mint);
+  --accent-foreground: var(--brand-black);
+  --destructive: #DC2626;
+  --border: var(--gray-04);
+  --input: var(--gray-04);
+  --ring: var(--brand-periwinkle);
+
+  /* Chart colors using Prismatic accent palette */
+  --chart-1: var(--brand-blue-purple);
+  --chart-2: var(--brand-blue-iris);
+  --chart-3: var(--brand-turquoise);
+  --chart-4: var(--brand-cyan);
+  --chart-5: var(--brand-mint);
+
+  /* Interactive colors - Primary (Mint Green) */
+  --interactive-primary: var(--brand-mint);
+  --interactive-primary-hover: #28B885;
+  --interactive-primary-active: #23A376;
+  --interactive-primary-disabled: #9BDBC4;
+
+  /* Interactive colors - Secondary (Blue Purple) */
+  --interactive-secondary: var(--brand-blue-purple);
+  --interactive-secondary-hover: var(--brand-blue-purple);
+  --interactive-secondary-active: #4A62C5;
+  --interactive-secondary-disabled: #AFB9E3;
+
+  /* Interactive colors - Error */
+  --interactive-error: #FF265A;
+
+  /* Builder/Dark input theme */
+  --builder-bg: #1F2339;
+  --builder-border: #434966;
+  --builder-adornment-bg: #434966;
+  --builder-text: rgba(255, 255, 255, 0.85);
+  --builder-text-muted: rgba(255, 255, 255, 0.7);
+  --builder-text-placeholder: #8B8E9B;
+  --builder-required: #FF265A;
+  --builder-chip-bg: #53D2A4;
+  --builder-chip-border: #3A9372;
+
+  /* Sidebar using Prismatic design */
+  --sidebar: #1E223A;
+  --sidebar-foreground: rgba(255, 255, 255, 0.7);
+  --sidebar-foreground-active: #FFFFFF;
+  --sidebar-primary: var(--brand-mint);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(101, 212, 217, 0.1);
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: var(--brand-periwinkle);
+  --sidebar-active-indicator: #2ECD94;
+}
+
+.dark {
+  --background: var(--gray-12);
+  --foreground: var(--gray-01);
+  --card: var(--gray-11);
+  --card-foreground: var(--gray-01);
+  --popover: var(--gray-11);
+  --popover-foreground: var(--gray-01);
+  --primary: var(--brand-periwinkle);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--gray-10);
+  --secondary-foreground: var(--gray-01);
+  --muted: var(--gray-10);
+  --muted-foreground: var(--gray-07);
+  --accent: var(--brand-mint);
+  --accent-foreground: var(--brand-black);
+  --destructive: #EF4444;
+  --border: var(--gray-10);
+  --input: var(--gray-10);
+  --ring: var(--brand-periwinkle);
+
+  /* Chart colors - lighter variants for dark mode */
+  --chart-1: #7B8EE2;
+  --chart-2: #79A2E1;
+  --chart-3: #69A3B8;
+  --chart-4: #7FD8DC;
+  --chart-5: #53D2A4;
+
+  /* Neutral Palette - dark mode */
+  --neutral-50: #1F2339;
+  --neutral-100: #252941;
+  --neutral-200: #2E334D;
+  --neutral-300: #383E5B;
+  --neutral-400: #6F7283;
+  --neutral-500: #B6B9C3;
+
+  /* Text Opacity Tokens - dark mode */
+  --text-primary: rgba(255, 255, 255, 0.85);
+  --text-secondary: rgba(255, 255, 255, 0.70);
+  --text-disabled: rgba(255, 255, 255, 0.38);
+
+  /* Sidebar in dark mode */
+  --sidebar: var(--gray-12);
+  --sidebar-foreground: var(--gray-01);
+  --sidebar-primary: var(--brand-periwinkle);
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: var(--brand-mint);
+  --sidebar-accent-foreground: var(--brand-black);
+  --sidebar-border: var(--gray-10);
+  --sidebar-ring: var(--brand-periwinkle);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
