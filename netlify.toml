@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  GIT_CLONE_DEPTH = "0"
 
 [dev]
   command = "npm run dev"

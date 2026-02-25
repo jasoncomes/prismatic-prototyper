@@ -13,7 +13,7 @@ for dir in "$ROOT_DIR"/*/; do
   name="$(basename "$dir")"
 
   # Skip non-prototype directories
-  [[ "$name" == "node_modules" || "$name" == "dist" || "$name" == "primitives" || "$name" =~ ^\. ]] && continue
+  [[ "$name" == "node_modules" || "$name" == "dist" || "$name" == "primitives" || "$name" == "scripts" || "$name" =~ ^\. ]] && continue
 
   # Must have a package.json with a build script
   [[ -f "$dir/package.json" ]] || continue
@@ -32,9 +32,6 @@ for dir in "$ROOT_DIR"/*/; do
   fi
 done
 
-if [[ $built -eq 0 ]]; then
-  echo "No prototypes found to build. Creating placeholder."
-  echo "<html><body><h1>No prototypes deployed yet.</h1></body></html>" > "$DIST_DIR/index.html"
-fi
-
 echo "Done. Built $built prototype(s)."
+
+node "$ROOT_DIR/scripts/generate-gallery.mjs"

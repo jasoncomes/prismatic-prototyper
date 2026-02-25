@@ -1,6 +1,11 @@
 {
   "name": "design-system",
   "private": true,
+  "prototype": {
+    "title": "Hello World",
+    "description": "Dummy prototype to verify the Netlify pipeline.",
+    "tags": ["test", "setup"]
+  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {
