@@ -1,80 +1,73 @@
 # Prototypes
 
-Interactive UI prototypes for the Prismatic platform. Each prototype is a standalone route served from a single Netlify site.
+Interactive UI prototypes for the Prismatic platform. Each prototype is a standalone rsbuild project deployed as a route on a single Netlify site.
 
 ## Quick Start
 
 ```bash
-cd .prototypes
-npm install
-npm run dev          # Start dev server at http://localhost:5174
-npm run build        # Production build
-npm run preview      # Preview production build
+# Create a new prototype via the skill
+/prototype-builder <name>
+
+# Or manually
+bash /path/to/init-prototype.sh my-feature
+
+# Dev server (inside a prototype dir)
+cd my-feature
+pnpm dev              # http://localhost:5173
+
+# Build all prototypes
+npm run build         # Runs build.sh → dist/<name>/
+```
+
+## Project Structure
+
+```
+.prototypes/
+├── build.sh          # Iterates prototypes, runs each build, collects into dist/
+├── netlify.toml      # Netlify config (publish: dist/)
+├── package.json      # Root build script only
+├── hello-world/      # Example prototype
+│   ├── src/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   ├── index.css           # Theme tokens (DO NOT MODIFY)
+│   │   ├── components/ui/      # Core primitives (DO NOT MODIFY)
+│   │   └── components/*.tsx    # Purpose-built components
+│   ├── index.html
+│   ├── rsbuild.config.ts
+│   ├── package.json
+│   └── pnpm-lock.yaml
+└── another-prototype/
+    └── ...
 ```
 
 ## Creating a Prototype
 
-1. Create a directory under `.prototypes/` with a descriptive name:
+The `/prototype-builder` skill scaffolds a complete prototype with the full design system (Radix UI + Tailwind CSS), including core primitives and purpose-built components.
 
-```bash
-mkdir -p .prototypes/my-feature
-```
+Each prototype is fully self-contained — its own `package.json`, `pnpm-lock.yaml`, `rsbuild.config.ts`, and `src/` directory. No shared dependencies at the workspace level.
 
-2. Add an `index.html` and entry file:
+## Build Pipeline
 
-```
-.prototypes/my-feature/
-├── index.html        # HTML entry point
-├── main.tsx          # React entry
-└── components/       # Prototype-specific components
-```
+`npm run build` at the root runs `build.sh`, which:
 
-3. Register the entry in `vite.config.ts` (multi-page input).
+1. Discovers prototype directories (has `package.json` with a `build` script)
+2. Runs `pnpm install && pnpm build` in each one
+3. Copies each prototype's `dist/` into the root `dist/<name>/`
 
-4. Run `npm run dev` and navigate to `/my-feature/`.
-
-## Primitive Hierarchy
-
-When building prototype UI, follow this priority order:
-
-1. **Prototype primitives** (`primitives/`) — Reusable blocks extracted from previous prototypes
-2. **Frontend UI primitives** (`frontend/frontend/src/ui/`) — Production UI components
-3. **Build new** — Create in `primitives/` first, promote to `src/ui/` after validation
-
-### Primitives Directory
-
-```
-primitives/
-├── components/     # UI building blocks (buttons, cards, inputs)
-├── layouts/        # Common layout patterns (sidebar, split-pane, dashboard)
-├── hooks/          # Shared React hooks
-└── theme/          # Design tokens and MUI theme extensions
-```
+Netlify publishes `dist/`, so each prototype is served at `/<name>/`.
 
 ## Deployment
 
 Prototypes deploy to Netlify as a single site with route-based access:
 
-- **Production:** `https://prismatic-prototypes.netlify.app/<prototype-name>/`
+- **Production:** `https://prismatic-prototypes.netlify.app/<name>/`
 - **Deploy previews:** Automatic on PR branches
-
-```bash
-npm run build       # Builds all prototypes
-netlify deploy      # Preview deploy
-netlify deploy --prod  # Production deploy
-```
-
-## Promoting to Production
-
-When a prototype is validated and approved:
-
-1. Extract reusable primitives to `primitives/`
-2. Move production-ready components to `frontend/frontend/src/ui/` or `src/components/`
-3. Archive the prototype (move to `.prototypes/_archived/`)
 
 ## Conventions
 
-- Use MUI 5 theme tokens from `primitives/theme/` for visual consistency
-- Prototypes should be self-contained — no imports from `frontend/frontend/src/`
-- Keep prototypes lightweight — mock data instead of real API calls
+- Each prototype gets the full Radix/Tailwind design system via the skill template
+- Do NOT modify `src/index.css` or `src/components/ui/*` — these are production primitives
+- Create new components in `src/components/` that compose the primitives
+- Prototypes should be self-contained — mock data instead of real API calls
 - Name prototypes by feature, not ticket number (e.g., `connection-wizard`, not `PRIS-1234`)
