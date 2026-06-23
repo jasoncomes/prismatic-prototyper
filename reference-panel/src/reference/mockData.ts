@@ -158,8 +158,8 @@ const DISABLED_REASON: Record<SourceKind, string> = {
 export const buildPeerSources = (a: Availability): SourceDef[] => [
   {
     kind: "test",
-    label: "Test Data",
-    shortLabel: "Test Data",
+    label: "Execution Results",
+    shortLabel: "Test Runs",
     available: a.test,
     reason: DISABLED_REASON.test,
     runnable: true,
@@ -168,7 +168,7 @@ export const buildPeerSources = (a: Availability): SourceDef[] => [
   },
   {
     kind: "inline",
-    label: "Inline Action",
+    label: "Inline Action Response",
     shortLabel: "Inline",
     available: a.inline,
     reason: DISABLED_REASON.inline,
@@ -204,8 +204,8 @@ export const buildTieredSources = (a: Availability): SourceDef[] => [
     runnable: true,
     runVerb: "Run new test execution",
     groups: [
-      { label: "Test executions", runs: EXECUTION_RUNS },
-      { label: "Inline action results", runs: INLINE_RESULTS },
+      { label: "Execution Results", runs: EXECUTION_RUNS },
+      { label: "Inline Action Responses", runs: INLINE_RESULTS },
     ],
   },
   {

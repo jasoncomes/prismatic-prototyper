@@ -105,7 +105,7 @@ export function ReferencePanel({
       <div className="space-y-4 px-5 py-4">
         <div>
           <div className="mb-1.5 text-[13px] font-semibold text-foreground/70">
-            Reference step
+            Step
           </div>
           <Select value={stepSlug} onValueChange={setStepSlug}>
             <SelectTrigger className="w-full">
@@ -140,7 +140,7 @@ export function ReferencePanel({
       <div className="space-y-2.5 px-5 pb-2 pt-1">
         <div>
           <div className="mb-1.5 text-[13px] font-semibold text-foreground/70">
-            Reference path
+            Path
           </div>
           <div className="flex items-stretch overflow-hidden rounded border border-neutral-200">
             <input

@@ -15,10 +15,10 @@ interface VariantSwitcherProps {
 }
 
 const AVAIL_KEYS: { key: keyof Availability; label: string }[] = [
-  { key: "test", label: "Test Data" },
+  { key: "test", label: "Execution Results" },
   { key: "inline", label: "Inline Action" },
   { key: "schema", label: "Output Schema" },
-  { key: "example", label: "Example" },
+  { key: "example", label: "Example Payload" },
 ]
 
 export function VariantSwitcher({

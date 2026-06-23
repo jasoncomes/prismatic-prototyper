@@ -80,7 +80,7 @@ const Sub = ({ p, compact }: { p: SelectorProps; compact?: boolean }) => {
 /* ---- 1. Segmented Up Top ---- */
 const Segmented = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-segmented">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <ToggleGroup
       type="single"
       variant="outline"
@@ -108,7 +108,7 @@ const Segmented = (p: SelectorProps) => (
 /* ---- 2. Source Row, reflows right ---- */
 const Reflow = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-reflow">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <div className="flex flex-wrap items-center gap-3">
       <ToggleGroup
         type="single"
@@ -139,7 +139,7 @@ const Stacked = (p: SelectorProps) => {
   return (
     <div className="space-y-3" data-visual-id="variant-stacked">
       <div>
-        <FieldLabel>Data source</FieldLabel>
+        <FieldLabel>Data</FieldLabel>
         <ToggleGroup
           type="single"
           variant="outline"
@@ -202,7 +202,7 @@ const TabsVariant = (p: SelectorProps) => (
 /* ---- 5. Chip Trio+1 ---- */
 const Chips = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-chips">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <div className="flex flex-wrap items-center gap-2">
       {p.sources.map((s) => {
         const selected = s.kind === p.selectedKind
@@ -272,7 +272,7 @@ const Disclosure = (p: SelectorProps) => {
 /* ---- 7. Card Radio Stack ---- */
 const Cards = (p: SelectorProps) => (
   <div className="space-y-1.5" data-visual-id="variant-cards">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     {p.sources.map((s) => {
       const selected = s.kind === p.selectedKind
       return (
@@ -321,7 +321,7 @@ const Cards = (p: SelectorProps) => (
 /* ---- 8. Pill Tabs ---- */
 const Pills = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-pills">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <div className="flex flex-wrap items-center gap-1.5">
       {p.sources.map((s) => {
         const selected = s.kind === p.selectedKind
@@ -356,7 +356,7 @@ const DropdownVariant = (p: SelectorProps) => {
   return (
     <div className="space-y-3" data-visual-id="variant-dropdown">
       <div>
-        <FieldLabel>Data source</FieldLabel>
+        <FieldLabel>Data</FieldLabel>
         <Select
           value={p.selectedKind}
           onValueChange={(v) => p.onSelectSource(v as SourceKind)}
@@ -398,7 +398,7 @@ const Header = (p: SelectorProps) => (
     data-visual-id="variant-header"
   >
     <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">
-      Source
+      Data
     </span>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -480,7 +480,7 @@ const MergedPill = (p: SelectorProps) => {
   const runnable = activeRunnable(p)
   return (
     <div className="space-y-2" data-visual-id="variant-mergedPill">
-      <FieldLabel>Data source</FieldLabel>
+      <FieldLabel>Data</FieldLabel>
       <div className="inline-flex h-9 w-fit items-stretch overflow-hidden rounded-md border border-neutral-200">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -509,7 +509,7 @@ const MergedPill = (p: SelectorProps) => {
 /* ---- 14. Accordion Sources ---- */
 const AccordionSrc = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-accordionSrc">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <div className="divide-y divide-neutral-100 overflow-hidden rounded-md border border-neutral-200">
       {p.sources.map((s) => {
         const selected = s.kind === p.selectedKind
@@ -559,7 +559,7 @@ const AccordionSrc = (p: SelectorProps) => (
 /* ---- 15. Segmented + Status Badges ---- */
 const SegmentedBadges = (p: SelectorProps) => (
   <div className="space-y-2" data-visual-id="variant-segmentedBadges">
-    <FieldLabel>Data source</FieldLabel>
+    <FieldLabel>Data</FieldLabel>
     <ToggleGroup
       type="single"
       variant="outline"
@@ -596,7 +596,7 @@ const Toolbar = (p: SelectorProps) => {
   const active = activeSourceOf(p)
   return (
     <div className="space-y-2" data-visual-id="variant-toolbar">
-      <FieldLabel>Data source</FieldLabel>
+      <FieldLabel>Data</FieldLabel>
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 rounded-md border border-neutral-200 p-1">
           {p.sources.map((s) => {
@@ -639,7 +639,7 @@ const Radios = (p: SelectorProps) => {
   return (
     <div className="space-y-3" data-visual-id="variant-radios">
       <div>
-        <FieldLabel>Data source</FieldLabel>
+        <FieldLabel>Data</FieldLabel>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {p.sources.map((s) => (
             <label
@@ -684,7 +684,7 @@ const VTabs = (p: SelectorProps) => {
   const runnable = activeRunnable(p)
   return (
     <div data-visual-id="variant-vtabs">
-      <FieldLabel>Data source</FieldLabel>
+      <FieldLabel>Data</FieldLabel>
       <div className="flex gap-3">
         <div className="flex w-[150px] shrink-0 flex-col gap-0.5 border-r border-neutral-100 pr-2">
           {p.sources.map((s) => {
@@ -735,7 +735,7 @@ const PopoverPicker = (p: SelectorProps) => {
   )
   return (
     <div className="space-y-2" data-visual-id="variant-popoverPicker">
-      <FieldLabel>Data source</FieldLabel>
+      <FieldLabel>Data</FieldLabel>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -815,7 +815,7 @@ const Breadcrumb = (p: SelectorProps) => {
   const active = activeSourceOf(p)
   return (
     <div className="space-y-2" data-visual-id="variant-breadcrumb">
-      <FieldLabel>Reference data</FieldLabel>
+      <FieldLabel>Data</FieldLabel>
       <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
