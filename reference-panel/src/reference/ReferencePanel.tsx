@@ -26,23 +26,33 @@ import {
   Availability,
   PAYLOAD_BY_SOURCE,
   STEPS,
+  buildBucketsSources,
   buildPeerSources,
+  buildSampleSources,
   buildTieredSources,
 } from "./mockData"
 import { PayloadTree } from "./PayloadTree"
 import { SourceSelector } from "./SourceSelector"
-import type { RunOption, SourceKind, SourceModel, VariantId } from "./types"
+import type {
+  NamingScheme,
+  RunOption,
+  SourceKind,
+  SourceModel,
+  VariantId,
+} from "./types"
 
 interface ReferencePanelProps {
   variant: VariantId
   sourceModel: SourceModel
   availability: Availability
+  naming: NamingScheme
 }
 
 export function ReferencePanel({
   variant,
   sourceModel,
   availability,
+  naming,
 }: ReferencePanelProps) {
   const [stepSlug, setStepSlug] = useState(STEPS[1].slug)
   const [requestedKind, setRequestedKind] = useState<SourceKind | null>(null)
@@ -51,13 +61,14 @@ export function ReferencePanel({
   const [query, setQuery] = useState("")
   const [running, setRunning] = useState(false)
 
-  const sources = useMemo(
-    () =>
-      sourceModel === "peers"
-        ? buildPeerSources(availability)
-        : buildTieredSources(availability),
-    [sourceModel, availability]
-  )
+  const sources = useMemo(() => {
+    if (sourceModel === "peers") return buildPeerSources(availability, naming)
+    if (sourceModel === "tiered")
+      return buildTieredSources(availability, naming)
+    if (sourceModel === "buckets")
+      return buildBucketsSources(availability, naming)
+    return buildSampleSources(availability, naming)
+  }, [sourceModel, availability, naming])
 
   const firstAvailable = sources.find((s) => s.available)?.kind
   const requestedAvailable = sources.find(
@@ -87,7 +98,14 @@ export function ReferencePanel({
 
   const onSelectRun = (run: RunOption) => setSelectedRunId(run.id)
 
-  const doc = effectiveKind ? PAYLOAD_BY_SOURCE[effectiveKind] : undefined
+  const sampleShowsSchema = effectiveKind === "sample" && availability.schema
+  const doc = !effectiveKind
+    ? undefined
+    : effectiveKind === "sample"
+      ? availability.schema
+        ? PAYLOAD_BY_SOURCE.schema
+        : PAYLOAD_BY_SOURCE.example
+      : PAYLOAD_BY_SOURCE[effectiveKind]
   const noneAvailable = !effectiveKind
 
   return (
@@ -192,12 +210,21 @@ export function ReferencePanel({
           </Empty>
         ) : (
           doc && (
-            <PayloadTree
-              doc={doc}
-              query={query}
-              selectedPath={path}
-              onSelect={setPath}
-            />
+            <>
+              {effectiveKind === "sample" && (
+                <div className="mb-2 rounded bg-neutral-50 px-2.5 py-1.5 text-[12px] text-foreground/55">
+                  {sampleShowsSchema
+                    ? "Showing Output Schema — Example Payload is the fallback."
+                    : "Showing Example Payload — no Output Schema defined for this step."}
+                </div>
+              )}
+              <PayloadTree
+                doc={doc}
+                query={query}
+                selectedPath={path}
+                onSelect={setPath}
+              />
+            </>
           )
         )}
       </div>

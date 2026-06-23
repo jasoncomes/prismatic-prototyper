@@ -3,16 +3,35 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { VARIANTS } from "./mockData"
 import type { Availability } from "./mockData"
-import type { SourceModel, VariantId } from "./types"
+import type { NamingScheme, SourceModel, VariantId } from "./types"
 
 interface VariantSwitcherProps {
   variant: VariantId
   onVariant: (v: VariantId) => void
   sourceModel: SourceModel
   onSourceModel: (m: SourceModel) => void
+  naming: NamingScheme
+  onNaming: (n: NamingScheme) => void
   availability: Availability
   onAvailability: (a: Availability) => void
 }
+
+const STAGES: {
+  letter: string
+  label: string
+  variant: VariantId
+  grouping: SourceModel
+}[] = [
+  { letter: "A", label: "4 sources", variant: "segmented", grouping: "peers" },
+  { letter: "B", label: "Two buckets", variant: "segmented", grouping: "buckets" },
+  { letter: "C", label: "Easy path", variant: "easyPath", grouping: "buckets" },
+  {
+    letter: "D",
+    label: "Zero-choice",
+    variant: "zeroChoice",
+    grouping: "buckets",
+  },
+]
 
 const AVAIL_KEYS: { key: keyof Availability; label: string }[] = [
   { key: "test", label: "Execution Results" },
@@ -26,6 +45,8 @@ export function VariantSwitcher({
   onVariant,
   sourceModel,
   onSourceModel,
+  naming,
+  onNaming,
   availability,
   onAvailability,
 }: VariantSwitcherProps) {
@@ -57,11 +78,31 @@ export function VariantSwitcher({
                 value={sourceModel}
                 onValueChange={(v) => v && onSourceModel(v as SourceModel)}
               >
-                <ToggleGroupItem value="peers">
-                  Separate sources
-                </ToggleGroupItem>
+                <ToggleGroupItem value="peers">Separate</ToggleGroupItem>
                 <ToggleGroupItem value="tiered">
-                  Grouped (Live Data)
+                  Group Live Data
+                </ToggleGroupItem>
+                <ToggleGroupItem value="sample">
+                  Group Schema + Example
+                </ToggleGroupItem>
+                <ToggleGroupItem value="buckets">
+                  Two buckets
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </Field>
+            <Field label="Source names">
+              <ToggleGroup
+                type="single"
+                variant="outline"
+                size="sm"
+                value={naming}
+                onValueChange={(v) => v && onNaming(v as NamingScheme)}
+              >
+                <ToggleGroupItem value="descriptive">
+                  Descriptive
+                </ToggleGroupItem>
+                <ToggleGroupItem value="friendly">
+                  Real / Test Data
                 </ToggleGroupItem>
               </ToggleGroup>
             </Field>
@@ -90,6 +131,37 @@ export function VariantSwitcher({
               </div>
             </Field>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 rounded-md bg-brand-deep-purple/5 px-3 py-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-brand-deep-purple/70">
+            Recommendation stages
+          </span>
+          {STAGES.map((st) => {
+            const activeStage =
+              variant === st.variant && sourceModel === st.grouping
+            return (
+              <button
+                key={st.letter}
+                type="button"
+                onClick={() => {
+                  onVariant(st.variant)
+                  onSourceModel(st.grouping)
+                }}
+                className={cn(
+                  "rounded-md border px-2.5 py-1 text-[12px] transition-colors",
+                  activeStage
+                    ? "border-brand-deep-purple bg-brand-deep-purple text-white"
+                    : "border-neutral-200 bg-white text-foreground/70 hover:border-neutral-300"
+                )}
+              >
+                <span className="font-bold">{st.letter}</span> {st.label}
+              </button>
+            )
+          })}
+          <span className="text-[11px] text-foreground/40">
+            most control → easiest
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-1.5">

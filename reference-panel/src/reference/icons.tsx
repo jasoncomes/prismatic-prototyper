@@ -19,6 +19,7 @@ export const SOURCE_ICON: Record<SourceKind, IconType> = {
   schema: UilBracketsCurly,
   example: UilFileAlt,
   live: UilDatabase,
+  sample: UilFileAlt,
 }
 
 export const TYPE_ICON: Record<PayloadType, IconType> = {
@@ -38,3 +39,12 @@ export const STATUS_VARIANT: Record<
   error: "error",
   running: "warning",
 }
+
+const REAL_KINDS: SourceKind[] = ["test", "inline", "live"]
+
+export const provenanceOf = (
+  kind: SourceKind
+): { isReal: boolean; label: string } =>
+  REAL_KINDS.includes(kind)
+    ? { isReal: true, label: "Showing real data from your connection" }
+    : { isReal: false, label: "Showing an example of the expected shape" }

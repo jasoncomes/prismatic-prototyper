@@ -1,4 +1,10 @@
-export type SourceKind = "test" | "inline" | "schema" | "example" | "live"
+export type SourceKind =
+  | "test"
+  | "inline"
+  | "schema"
+  | "example"
+  | "live"
+  | "sample"
 
 export type RunStatus = "success" | "error" | "running"
 
@@ -72,8 +78,12 @@ export type VariantId =
   | "vtabs"
   | "popoverPicker"
   | "breadcrumb"
+  | "easyPath"
+  | "zeroChoice"
 
-export type SourceModel = "peers" | "tiered"
+export type SourceModel = "peers" | "tiered" | "sample" | "buckets"
+
+export type NamingScheme = "descriptive" | "friendly"
 
 export interface VariantMeta {
   id: VariantId

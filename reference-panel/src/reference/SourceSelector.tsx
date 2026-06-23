@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import { SOURCE_ICON, STATUS_VARIANT } from "./icons"
+import { SOURCE_ICON, STATUS_VARIANT, provenanceOf } from "./icons"
 import { StatusIndicator } from "@/components/status-indicator"
 import { SubDropdown } from "./SubDropdown"
 import type { RunOption, SourceDef, SourceKind, VariantId } from "./types"
@@ -840,6 +840,106 @@ const Breadcrumb = (p: SelectorProps) => {
   )
 }
 
+const ProvDot = ({ isReal }: { isReal: boolean }) => (
+  <span
+    className={cn(
+      "size-2 shrink-0 rounded-full",
+      isReal ? "bg-brand-mint" : "border border-foreground/40"
+    )}
+  />
+)
+
+/* ---- 19. Easy Path (progressive disclosure) ---- */
+const EasyPath = (p: SelectorProps) => {
+  const [open, setOpen] = useState(false)
+  const active = activeSourceOf(p)
+  const prov = active ? provenanceOf(active.kind) : undefined
+
+  if (!open) {
+    return (
+      <div
+        className="flex flex-wrap items-center gap-1.5 text-[12px] text-foreground/55"
+        data-visual-id="variant-easyPath"
+      >
+        {prov && <ProvDot isReal={prov.isReal} />}
+        <span>{prov?.label ?? "No reference data for this step yet"}</span>
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="font-medium text-brand-blue-purple hover:underline"
+        >
+          · Change
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="space-y-2 rounded-md border border-dashed border-neutral-200 p-2.5"
+      data-visual-id="variant-easyPath"
+    >
+      <div className="flex items-center justify-between">
+        <FieldLabel>Data</FieldLabel>
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="text-[12px] font-medium text-brand-blue-purple hover:underline"
+        >
+          Done
+        </button>
+      </div>
+      <div className="flex w-full items-stretch overflow-hidden rounded-md border border-neutral-200">
+        {p.sources.map((s) => {
+          const selected = s.kind === p.selectedKind
+          const sProv = provenanceOf(s.kind)
+          return (
+            <button
+              key={s.kind}
+              type="button"
+              disabled={!s.available}
+              title={!s.available ? s.reason : undefined}
+              onClick={() => p.onSelectSource(s.kind)}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 border-r border-neutral-200 px-3 py-2 text-[13px] last:border-r-0 transition-colors",
+                selected
+                  ? "bg-brand-deep-purple/8 font-medium text-brand-deep-purple"
+                  : "text-foreground/65 hover:bg-neutral-50",
+                !s.available && "cursor-not-allowed opacity-40"
+              )}
+            >
+              {sProv.isReal && <ProvDot isReal />}
+              {s.label}
+            </button>
+          )
+        })}
+      </div>
+      <Sub p={p} />
+    </div>
+  )
+}
+
+/* ---- 20. Zero-choice (provenance only) ---- */
+const ZeroChoice = (p: SelectorProps) => {
+  const active = activeSourceOf(p)
+  const prov = active ? provenanceOf(active.kind) : undefined
+  return (
+    <div
+      className="flex items-center gap-2 text-[12px] text-foreground/55"
+      data-visual-id="variant-zeroChoice"
+    >
+      {prov ? (
+        <>
+          <ProvDot isReal={prov.isReal} />
+          <span>{prov.isReal ? "Real data" : "Example data"}</span>
+        </>
+      ) : (
+        <span>No reference data for this step yet</span>
+      )}
+    </div>
+  )
+}
+
 const REGISTRY: Record<VariantId, (p: SelectorProps) => React.ReactNode> = {
   segmented: Segmented,
   reflow: Reflow,
@@ -859,6 +959,8 @@ const REGISTRY: Record<VariantId, (p: SelectorProps) => React.ReactNode> = {
   vtabs: VTabs,
   popoverPicker: PopoverPicker,
   breadcrumb: Breadcrumb,
+  easyPath: EasyPath,
+  zeroChoice: ZeroChoice,
 }
 
 export function SourceSelector(props: SelectorProps) {

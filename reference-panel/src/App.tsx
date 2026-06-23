@@ -3,11 +3,12 @@ import { useState } from "react"
 import { ReferencePanel } from "./reference/ReferencePanel"
 import { VariantSwitcher } from "./reference/VariantSwitcher"
 import type { Availability } from "./reference/mockData"
-import type { SourceModel, VariantId } from "./reference/types"
+import type { NamingScheme, SourceModel, VariantId } from "./reference/types"
 
 function App() {
   const [variant, setVariant] = useState<VariantId>("segmented")
   const [sourceModel, setSourceModel] = useState<SourceModel>("peers")
+  const [naming, setNaming] = useState<NamingScheme>("descriptive")
   const [availability, setAvailability] = useState<Availability>({
     test: true,
     inline: true,
@@ -22,6 +23,8 @@ function App() {
         onVariant={setVariant}
         sourceModel={sourceModel}
         onSourceModel={setSourceModel}
+        naming={naming}
+        onNaming={setNaming}
         availability={availability}
         onAvailability={setAvailability}
       />
@@ -36,6 +39,7 @@ function App() {
           variant={variant}
           sourceModel={sourceModel}
           availability={availability}
+          naming={naming}
         />
       </div>
     </div>
