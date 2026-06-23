@@ -1,0 +1,19 @@
+{
+  "matchPercentage": 57.374918778427556,
+  "diffPixels": 2624,
+  "totalPixels": 6156,
+  "config": {
+    "url": "http://localhost:3000",
+    "selector": ".flex > .flex > .relative > .flex",
+    "viewport": {
+      "width": 1721,
+      "height": 1289
+    }
+  },
+  "paths": {
+    "reference": "/Users/katrynmc/prismatic-code/product-ai-tools/design-system/screenshots/reference.png",
+    "current": "/Users/katrynmc/prismatic-code/product-ai-tools/design-system/screenshots/current.png",
+    "diff": "/Users/katrynmc/prismatic-code/product-ai-tools/design-system/screenshots/diff.png"
+  },
+  "status": "needs_work"
+}
