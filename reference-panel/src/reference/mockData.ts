@@ -176,14 +176,14 @@ export const PAYLOAD: Record<Flavor, PayloadDoc> = {
 }
 
 const REASON = {
-  real: "No execution has captured data for this step yet",
-  test: "Run the action to fetch test data",
+  real: "No test runs have captured data for this step yet",
+  test: "Run the step to fetch test data",
   example: "No output schema or example payload defined for this step",
 }
 
 const realSource = (a: Availability): SourceDef => ({
   kind: "real",
-  label: "Real data",
+  label: "Test Runs",
   available: a.real,
   reason: REASON.real,
   runs: CAPTURED_RUNS,
@@ -191,7 +191,7 @@ const realSource = (a: Availability): SourceDef => ({
 
 const testSource = (a: Availability): SourceDef => ({
   kind: "test",
-  label: "Test data",
+  label: "Step",
   available: a.inline,
   reason: REASON.test,
 })

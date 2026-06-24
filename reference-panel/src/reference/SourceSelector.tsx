@@ -155,7 +155,7 @@ const realRunner = (p: SelectorProps, fullWidth = false) => (
     runs={p.executions}
     selectedRunId={p.selectedRunId}
     onSelect={p.onSelectExecution}
-    runLabel="Run execution"
+    runLabel="Run test"
     onRun={p.onRunTestExecution}
     fullWidth={fullWidth}
   />
@@ -166,7 +166,7 @@ const testRunner = (p: SelectorProps, fullWidth = false) => (
     runs={p.actionResults}
     selectedRunId={p.selectedActionId}
     onSelect={p.onSelectActionResult}
-    runLabel="Run action"
+    runLabel="Run step"
     onRun={p.onRunAction}
     fullWidth={fullWidth}
   />
@@ -179,14 +179,14 @@ const activeRunCfg = (p: SelectorProps) =>
         runs: p.actionResults,
         sel: p.selectedActionId,
         onSelect: p.onSelectActionResult,
-        runLabel: "Run action",
+        runLabel: "Run step",
         onRun: p.onRunAction,
       }
     : {
         runs: p.executions,
         sel: p.selectedRunId,
         onSelect: p.onSelectExecution,
-        runLabel: "Run execution",
+        runLabel: "Run test",
         onRun: p.onRunTestExecution,
       }
 
@@ -236,19 +236,19 @@ const Section = ({
 
 const readout = (p: SelectorProps) => {
   if (p.activeSource === "example") return "Example"
-  if (p.activeSource === "action") return "Test data · action result"
+  if (p.activeSource === "action") return "Step · result"
   const run = p.executions.find((r) => r.id === p.selectedRunId)
-  return run ? `Real data · ${run.label}` : "Real data"
+  return run ? `Test Runs · ${run.label}` : "Test Runs"
 }
 
 /* ---------------- ONE-option chooser body (used by popover) ---------------- */
 
 const ChooserBody = (p: SelectorProps) => (
   <div className="space-y-2">
-    <Section title="Real" active={p.activeSource === "execution"}>
+    <Section title="Test Runs" active={p.activeSource === "execution"}>
       {realRunner(p)}
     </Section>
-    <Section title="Test" active={p.activeSource === "action"}>
+    <Section title="Step" active={p.activeSource === "action"}>
       {testRunner(p)}
     </Section>
     <button
@@ -276,7 +276,7 @@ const CascadeItems = (p: SelectorProps) => (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="gap-2">
         <ProvDot provenance="real" />
-        Real
+        Test Runs
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {p.executions.map((r) => (
@@ -295,14 +295,14 @@ const CascadeItems = (p: SelectorProps) => (
           onSelect={() => p.onRunTestExecution()}
         >
           <UilPlay className="size-4 text-brand-mint" />
-          Run execution
+          Run test
         </DropdownMenuItem>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="gap-2">
         <ProvDot provenance="test" />
-        Test
+        Step
       </DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {p.actionResults.map((r) => (
@@ -321,7 +321,7 @@ const CascadeItems = (p: SelectorProps) => (
           onSelect={() => p.onRunAction()}
         >
           <UilPlay className="size-4 text-brand-mint" />
-          Run action
+          Run step
         </DropdownMenuItem>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
@@ -397,10 +397,10 @@ const OnePill = (p: SelectorProps) => (
 
 const sourceLabel = (p: SelectorProps) =>
   p.activeSource === "action"
-    ? "Test"
+    ? "Step"
     : p.activeSource === "example"
       ? "Example"
-      : "Real"
+      : "Test Runs"
 
 /* one-split — run picker + source-switch caret in one control */
 const OneSplit = (p: SelectorProps) => {
@@ -480,7 +480,7 @@ const OneBreadcrumb = (p: SelectorProps) => {
                   }
                 >
                   <ProvDot provenance="real" />
-                  Real
+                  Test Runs
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="gap-2"
@@ -491,7 +491,7 @@ const OneBreadcrumb = (p: SelectorProps) => {
                   }
                 >
                   <ProvDot provenance="test" />
-                  Test
+                  Step
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="gap-2"
@@ -564,10 +564,10 @@ const RealSub = ({ p, style }: { p: SelectorProps; style: SubStyle }) => {
   if (style === "stacked") {
     return (
       <div className="space-y-2">
-        <Section title="Real" active={!isTest}>
+        <Section title="Test Runs" active={!isTest}>
           {realRunner(p)}
         </Section>
-        <Section title="Test" active={isTest}>
+        <Section title="Step" active={isTest}>
           {testRunner(p)}
         </Section>
       </div>
@@ -581,8 +581,8 @@ const RealSub = ({ p, style }: { p: SelectorProps; style: SubStyle }) => {
     <div className="space-y-2 rounded-md border border-neutral-200 px-3 py-2.5">
       <div className="flex gap-4 border-b border-neutral-200">
         {[
-          { label: "Real", on: !isTest, go: goReal },
-          { label: "Test", on: isTest, go: goTest },
+          { label: "Test Runs", on: !isTest, go: goReal },
+          { label: "Step", on: isTest, go: goTest },
         ].map((t) => (
           <button
             key={t.label}
@@ -626,7 +626,7 @@ const TwoToggle = (p: SelectorProps) => {
           checked={on}
           onCheckedChange={(v) => p.onSelectKind(v ? "real" : "example")}
         />
-        Use real data
+        Use test runs
         {!on && <span className="text-foreground/45">· showing Example</span>}
       </label>
       {on && <RealSub p={p} style="stacked" />}
@@ -648,7 +648,7 @@ const TwoDropdown = (p: SelectorProps) => {
           >
             <ProvDot provenance={isReal ? p.provenance : "example"} />
             <span className="flex-1 truncate text-left">
-              {isReal ? "Real data" : "Example"}
+              {isReal ? "Test Runs" : "Example"}
             </span>
             <UilAngleDown className="size-4 shrink-0 text-foreground/40" />
           </button>
@@ -659,7 +659,7 @@ const TwoDropdown = (p: SelectorProps) => {
             onSelect={() => p.onSelectKind("real")}
           >
             <ProvDot provenance="real" />
-            Real data
+            Test Runs
           </DropdownMenuItem>
           <DropdownMenuItem
             className="gap-2"
@@ -752,9 +752,9 @@ const EasyLine = ({ lineStyle, ...p }: SelectorProps & { lineStyle: LineStyle })
         <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1">
           <ProvDot provenance={p.provenance} />
           {p.provenance === "real"
-            ? "Real data"
+            ? "Test Runs"
             : p.provenance === "test"
-              ? "Test data"
+              ? "Step"
               : "Example"}
         </span>
         <span>·</span>

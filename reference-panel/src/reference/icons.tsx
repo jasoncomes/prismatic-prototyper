@@ -28,7 +28,7 @@ export const TYPE_ICON: Record<PayloadType, IconType> = {
 }
 
 export const PROVENANCE_COPY: Record<Provenance, string> = {
-  real: "Showing real data from your connection",
-  test: "Showing test data — a real response from test inputs",
+  real: "Showing data from a captured test run",
+  test: "Showing a step result — a real response from test inputs",
   example: "Showing an example of the expected shape",
 }

@@ -17,18 +17,18 @@ const PRESENTATIONS: { id: Presentation; label: string; blurb: string }[] = [
   {
     id: "one",
     label: "1 option",
-    blurb: "Single control; expands to Real / Example / Run action.",
+    blurb: "Single control; expands to Test Runs / Step / Example.",
   },
   // Temporarily hidden — uncomment to bring back the "2 options" presentation.
   // {
   //   id: "two",
   //   label: "2 options",
-  //   blurb: "Real data | Example; Real reveals run picker + Run action.",
+  //   blurb: "Test Runs | Example; Test Runs reveals run picker + Run step.",
   // },
   {
     id: "three",
     label: "3 options",
-    blurb: "Real data | Test data | Example; Real/Test reveal the picker.",
+    blurb: "Test Runs | Step | Example; Test Runs/Step reveal the picker.",
   },
   {
     id: "easy",
@@ -38,8 +38,8 @@ const PRESENTATIONS: { id: Presentation; label: string; blurb: string }[] = [
 ]
 
 const AVAIL_KEYS: { key: keyof Availability; label: string }[] = [
-  { key: "real", label: "Real data" },
-  { key: "inline", label: "Inline (test)" },
+  { key: "real", label: "Test Runs" },
+  { key: "inline", label: "Step" },
   { key: "schema", label: "Output schema" },
   { key: "example", label: "Example payload" },
 ]

@@ -259,8 +259,8 @@ export function ReferencePanel({
             <UilSpinner className="size-7 animate-spin" />
             <span className="text-sm">
               {running === "execution"
-                ? "Running execution…"
-                : "Running action…"}
+                ? "Running test…"
+                : "Running step…"}
             </span>
           </div>
         ) : !effectiveKind ? (
@@ -271,12 +271,12 @@ export function ReferencePanel({
               </EmptyMedia>
               <EmptyTitle>No reference data yet</EmptyTitle>
               <EmptyDescription>
-                Run a test execution or the action to see data here.
+                Run a test or step to see data here.
               </EmptyDescription>
             </EmptyHeader>
             <Button size="sm" onClick={onRunTestExecution} className="gap-1.5">
               <UilFlask className="size-4" />
-              Run execution
+              Run test
             </Button>
           </Empty>
         ) : actionNotRun ? (
@@ -285,15 +285,14 @@ export function ReferencePanel({
               <EmptyMedia variant="icon">
                 <UilBolt />
               </EmptyMedia>
-              <EmptyTitle>Run the action to fetch test data</EmptyTitle>
+              <EmptyTitle>Run the step to fetch test data</EmptyTitle>
               <EmptyDescription>
-                We'll call the action with test inputs and show the real
-                response.
+                We'll call the step with test inputs and show the response.
               </EmptyDescription>
             </EmptyHeader>
             <Button size="sm" onClick={onRunAction} className="gap-1.5">
               <UilBolt className="size-4" />
-              Run action
+              Run step
             </Button>
           </Empty>
         ) : (
