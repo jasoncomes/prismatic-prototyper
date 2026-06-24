@@ -32,7 +32,7 @@ const PRESENTATIONS: { id: Presentation; label: string; blurb: string }[] = [
   },
   {
     id: "easy",
-    label: "Easy path (EWB)",
+    label: "Easy path",
     blurb: "Fields-first; quiet provenance line; Change reveals the choice.",
   },
 ]
