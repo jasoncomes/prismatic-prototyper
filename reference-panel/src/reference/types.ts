@@ -1,10 +1,23 @@
-export type SourceKind =
-  | "test"
-  | "inline"
-  | "schema"
-  | "example"
-  | "live"
-  | "sample"
+export type SourceKind = "real" | "test" | "example"
+
+export type Provenance = "real" | "test" | "example"
+
+export type Presentation = "one" | "two" | "three" | "easy"
+
+export type Variant =
+  | "one-cascade"
+  | "one-popover"
+  | "one-pill"
+  | "one-split"
+  | "one-breadcrumb"
+  | "two-seg-stacked"
+  | "two-seg-subtabs"
+  | "two-toggle"
+  | "two-dropdown"
+  | "three-segmented"
+  | "easy-dot"
+  | "easy-banner"
+  | "easy-chip"
 
 export type RunStatus = "success" | "error" | "running"
 
@@ -14,21 +27,18 @@ export interface RunOption {
   status: RunStatus
 }
 
-export interface RunGroup {
-  label: string
-  runs: RunOption[]
-}
-
 export interface SourceDef {
   kind: SourceKind
   label: string
-  shortLabel: string
   available: boolean
   reason?: string
-  runnable: boolean
-  runVerb?: string
   runs?: RunOption[]
-  groups?: RunGroup[]
+}
+
+export interface ActionInput {
+  key: string
+  label: string
+  value: string
 }
 
 export type PayloadType =
@@ -59,36 +69,9 @@ export interface StepOption {
   action: string
 }
 
-export type VariantId =
-  | "segmented"
-  | "reflow"
-  | "stacked"
-  | "tabs"
-  | "chips"
-  | "disclosure"
-  | "cards"
-  | "pills"
-  | "dropdown"
-  | "header"
-  | "mergedPill"
-  | "accordionSrc"
-  | "segmentedBadges"
-  | "toolbar"
-  | "radios"
-  | "vtabs"
-  | "popoverPicker"
-  | "breadcrumb"
-  | "easyPath"
-  | "zeroChoice"
-
-export type SourceModel = "peers" | "tiered" | "sample" | "buckets"
-
-export type NamingScheme = "descriptive" | "friendly"
-
-export interface VariantMeta {
-  id: VariantId
-  rank: number
-  name: string
-  blurb: string
-  subPlacement: "header" | "reflow-right" | "below" | "in-widget" | "nested"
+export interface Availability {
+  real: boolean
+  inline: boolean
+  schema: boolean
+  example: boolean
 }

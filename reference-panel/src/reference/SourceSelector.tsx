@@ -1,20 +1,8 @@
-import { useState } from "react"
 import UilAngleDown from "@iconscout/react-unicons/icons/uil-angle-down"
-import UilAngleRight from "@iconscout/react-unicons/icons/uil-angle-right"
 import UilPlay from "@iconscout/react-unicons/icons/uil-play"
-import UilTimes from "@iconscout/react-unicons/icons/uil-times"
+import UilCheck from "@iconscout/react-unicons/icons/uil-check"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,21 +13,62 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { ButtonGroup } from "@/components/ui/button-group"
+import { Switch } from "@/components/ui/switch"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
-import { SOURCE_ICON, STATUS_VARIANT, provenanceOf } from "./icons"
-import { StatusIndicator } from "@/components/status-indicator"
-import { SubDropdown } from "./SubDropdown"
-import type { RunOption, SourceDef, SourceKind, VariantId } from "./types"
+import { PROVENANCE_COPY } from "./icons"
+import type {
+  Presentation,
+  Provenance,
+  RunOption,
+  SourceDef,
+  SourceKind,
+  Variant,
+} from "./types"
+
+export type ActiveSource = "execution" | "action" | "example"
 
 export interface SelectorProps {
-  variant: VariantId
+  presentation: Presentation
+  variant: Variant
   sources: SourceDef[]
   selectedKind: SourceKind
-  onSelectSource: (k: SourceKind) => void
+  onSelectKind: (k: SourceKind) => void
+  activeSource: ActiveSource
+  provenance: Provenance
+  executions: RunOption[]
   selectedRunId?: string
-  onSelectRun: (r: RunOption) => void
-  onRunNew: () => void
+  onSelectExecution: (id: string) => void
+  onRunTestExecution: () => void
+  actionResults: RunOption[]
+  selectedActionId?: string
+  onSelectActionResult: (id: string) => void
+  onRunAction: () => void
 }
+
+/* ---------------- shared atoms ---------------- */
+
+const ProvDot = ({ provenance }: { provenance: Provenance }) => (
+  <span
+    className={cn(
+      "size-2.5 shrink-0 rounded-full",
+      provenance === "real" && "bg-brand-mint",
+      provenance === "test" && "border-2 border-brand-mint",
+      provenance === "example" && "border border-foreground/40"
+    )}
+  />
+)
 
 const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   <div className="mb-1.5 text-[13px] font-semibold text-foreground/70">
@@ -47,922 +76,729 @@ const FieldLabel = ({ children }: { children: React.ReactNode }) => (
   </div>
 )
 
-const SourceGlyph = ({
-  kind,
-  className,
+const RunDot = ({ status }: { status: RunOption["status"] }) => (
+  <span
+    className={cn(
+      "size-2 shrink-0 rounded-full",
+      status === "success" && "bg-brand-mint",
+      status === "error" && "bg-interactive-error",
+      status === "running" && "bg-brand-cyan"
+    )}
+  />
+)
+
+/* Split-picker: the selected run + a dropdown that lists runs AND the Run item */
+const RunMenu = ({
+  runs,
+  selectedRunId,
+  onSelect,
+  runLabel,
+  onRun,
+  fullWidth = false,
 }: {
-  kind: SourceKind
-  className?: string
+  runs: RunOption[]
+  selectedRunId?: string
+  onSelect: (id: string) => void
+  runLabel: string
+  onRun: () => void
+  fullWidth?: boolean
 }) => {
-  const Icon = SOURCE_ICON[kind]
-  return <Icon className={cn("size-4", className)} />
-}
-
-function activeRunnable(p: SelectorProps): SourceDef | undefined {
-  const active = p.sources.find((s) => s.kind === p.selectedKind)
-  return active?.runnable && active.available ? active : undefined
-}
-
-const Sub = ({ p, compact }: { p: SelectorProps; compact?: boolean }) => {
-  const active = activeRunnable(p)
-  if (!active) return null
+  const selected = runs.find((r) => r.id === selectedRunId) ?? runs[0]
   return (
-    <SubDropdown
-      source={active}
-      selectedRunId={p.selectedRunId}
-      onSelectRun={p.onSelectRun}
-      onRunNew={p.onRunNew}
-      compact={compact}
-    />
-  )
-}
-
-/* ---- 1. Segmented Up Top ---- */
-const Segmented = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-segmented">
-    <FieldLabel>Data</FieldLabel>
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      value={p.selectedKind}
-      onValueChange={(v) => v && p.onSelectSource(v as SourceKind)}
-      className="w-full"
-    >
-      {p.sources.map((s) => (
-        <ToggleGroupItem
-          key={s.kind}
-          value={s.kind}
-          disabled={!s.available}
-          title={!s.available ? s.reason : undefined}
-          className="flex-1 gap-1.5"
-        >
-          <SourceGlyph kind={s.kind} />
-          {s.shortLabel}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-    <Sub p={p} />
-  </div>
-)
-
-/* ---- 2. Source Row, reflows right ---- */
-const Reflow = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-reflow">
-    <FieldLabel>Data</FieldLabel>
-    <div className="flex flex-wrap items-center gap-3">
-      <ToggleGroup
-        type="single"
-        variant="outline"
-        value={p.selectedKind}
-        onValueChange={(v) => v && p.onSelectSource(v as SourceKind)}
-      >
-        {p.sources.map((s) => (
-          <ToggleGroupItem
-            key={s.kind}
-            value={s.kind}
-            disabled={!s.available}
-            title={!s.available ? s.reason : s.label}
-            className="px-2.5"
-          >
-            <SourceGlyph kind={s.kind} />
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-      <Sub p={p} />
-    </div>
-  </div>
-)
-
-/* ---- 3. Stacked Labeled Fields ---- */
-const Stacked = (p: SelectorProps) => {
-  const active = activeRunnable(p)
-  return (
-    <div className="space-y-3" data-visual-id="variant-stacked">
-      <div>
-        <FieldLabel>Data</FieldLabel>
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={p.selectedKind}
-          onValueChange={(v) => v && p.onSelectSource(v as SourceKind)}
-          className="w-full"
-        >
-          {p.sources.map((s) => (
-            <ToggleGroupItem
-              key={s.kind}
-              value={s.kind}
-              disabled={!s.available}
-              title={!s.available ? s.reason : undefined}
-              className="flex-1 gap-1.5"
-            >
-              <SourceGlyph kind={s.kind} />
-              {s.shortLabel}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
-      {active && (
-        <div>
-          <FieldLabel>
-            {active.kind === "inline" ? "Action result" : "Test run"}
-          </FieldLabel>
-          <Sub p={p} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ---- 4. Underlined Tabs ---- */
-const TabsVariant = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-tabs">
-    <Tabs
-      value={p.selectedKind}
-      onValueChange={(v) => p.onSelectSource(v as SourceKind)}
-    >
-      <TabsList className="w-full justify-start">
-        {p.sources.map((s) => (
-          <TabsTrigger
-            key={s.kind}
-            value={s.kind}
-            disabled={!s.available}
-            title={!s.available ? s.reason : undefined}
-            className="gap-1.5"
-          >
-            <SourceGlyph kind={s.kind} />
-            {s.shortLabel}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
-    <Sub p={p} />
-  </div>
-)
-
-/* ---- 5. Chip Trio+1 ---- */
-const Chips = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-chips">
-    <FieldLabel>Data</FieldLabel>
-    <div className="flex flex-wrap items-center gap-2">
-      {p.sources.map((s) => {
-        const selected = s.kind === p.selectedKind
-        return (
-          <button
-            key={s.kind}
-            type="button"
-            disabled={!s.available}
-            title={!s.available ? s.reason : undefined}
-            onClick={() => p.onSelectSource(s.kind)}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[13px] transition-colors",
-              selected
-                ? "border-brand-deep-purple bg-brand-deep-purple text-white"
-                : "border-neutral-200 bg-background text-foreground/70 hover:border-neutral-300",
-              !s.available && "cursor-not-allowed opacity-40"
-            )}
-          >
-            <SourceGlyph kind={s.kind} className="size-3.5" />
-            {s.shortLabel}
-          </button>
-        )
-      })}
-    </div>
-    <Sub p={p} />
-  </div>
-)
-
-/* ---- 6. Smart Default + Disclosure ---- */
-const Disclosure = (p: SelectorProps) => {
-  const [open, setOpen] = useState(false)
-  const active = p.sources.find((s) => s.kind === p.selectedKind)
-  const selectedRun = activeRunnable(p)?.runs?.find(
-    (r) => r.id === p.selectedRunId
-  )
-  return (
-    <div className="space-y-2" data-visual-id="variant-disclosure">
-      <div className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2">
-        <div className="flex items-center gap-2 text-[13px] text-foreground/75">
-          {active && <SourceGlyph kind={active.kind} />}
-          <span className="font-medium">Showing: {active?.label}</span>
-          {selectedRun && (
-            <span className="text-foreground/45">· {selectedRun.label}</span>
-          )}
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setOpen((v) => !v)}
-          className="gap-1 text-brand-blue-purple"
-        >
-          Change source
-          <UilAngleDown
-            className={cn("size-4 transition-transform", open && "rotate-180")}
-          />
-        </Button>
-      </div>
-      {open && (
-        <div className="space-y-2 rounded-md border border-dashed border-neutral-200 p-2">
-          <Segmented {...p} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ---- 7. Card Radio Stack ---- */
-const Cards = (p: SelectorProps) => (
-  <div className="space-y-1.5" data-visual-id="variant-cards">
-    <FieldLabel>Data</FieldLabel>
-    {p.sources.map((s) => {
-      const selected = s.kind === p.selectedKind
-      return (
-        <div
-          key={s.kind}
-          role="button"
-          tabIndex={s.available ? 0 : -1}
-          onClick={() => s.available && p.onSelectSource(s.kind)}
-          title={!s.available ? s.reason : undefined}
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
           className={cn(
-            "flex items-center gap-3 rounded-md border px-3 py-2 text-[13px] transition-colors",
-            selected
-              ? "border-brand-deep-purple bg-brand-deep-purple/5"
-              : "border-neutral-200 hover:border-neutral-300",
-            s.available ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+            "inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-background px-3 text-[13px] text-foreground/80 hover:bg-neutral-50",
+            fullWidth ? "w-full" : "min-w-[210px]"
           )}
         >
-          <span
-            className={cn(
-              "flex size-4 items-center justify-center rounded-full border",
-              selected ? "border-brand-deep-purple" : "border-neutral-300"
-            )}
-          >
-            {selected && (
-              <span className="size-2 rounded-full bg-brand-deep-purple" />
-            )}
-          </span>
-          <SourceGlyph kind={s.kind} />
-          <span className="font-medium text-foreground/85">{s.label}</span>
-          {!s.available && (
-            <span className="ml-auto text-[11px] text-foreground/45">
-              unavailable
+          {selected ? (
+            <>
+              <RunDot status={selected.status} />
+              <span className="flex-1 truncate text-left">
+                {selected.label}
+              </span>
+            </>
+          ) : (
+            <span className="flex-1 text-left text-foreground/45">
+              No results yet
             </span>
           )}
-          {selected && s.runnable && s.available && (
-            <div className="ml-auto" onClick={(e) => e.stopPropagation()}>
-              <Sub p={p} />
-            </div>
+          <UilAngleDown className="size-4 shrink-0 text-foreground/40" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[220px]">
+        {runs.map((r) => (
+          <DropdownMenuItem
+            key={r.id}
+            className="gap-2"
+            onSelect={() => onSelect(r.id)}
+          >
+            <RunDot status={r.status} />
+            {r.label}
+          </DropdownMenuItem>
+        ))}
+        {runs.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuItem onSelect={onRun} className="gap-2 font-medium">
+          <UilPlay className="size-4 text-brand-mint" />
+          {runLabel}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+const realRunner = (p: SelectorProps, fullWidth = false) => (
+  <RunMenu
+    runs={p.executions}
+    selectedRunId={p.selectedRunId}
+    onSelect={p.onSelectExecution}
+    runLabel="Run execution"
+    onRun={p.onRunTestExecution}
+    fullWidth={fullWidth}
+  />
+)
+
+const testRunner = (p: SelectorProps, fullWidth = false) => (
+  <RunMenu
+    runs={p.actionResults}
+    selectedRunId={p.selectedActionId}
+    onSelect={p.onSelectActionResult}
+    runLabel="Run action"
+    onRun={p.onRunAction}
+    fullWidth={fullWidth}
+  />
+)
+
+/* Runs + Run item for whichever source (Real/Test) is currently active */
+const activeRunCfg = (p: SelectorProps) =>
+  p.activeSource === "action"
+    ? {
+        runs: p.actionResults,
+        sel: p.selectedActionId,
+        onSelect: p.onSelectActionResult,
+        runLabel: "Run action",
+        onRun: p.onRunAction,
+      }
+    : {
+        runs: p.executions,
+        sel: p.selectedRunId,
+        onSelect: p.onSelectExecution,
+        runLabel: "Run execution",
+        onRun: p.onRunTestExecution,
+      }
+
+const RunMenuContent = (cfg: ReturnType<typeof activeRunCfg>) => (
+  <DropdownMenuContent align="start" className="min-w-[220px]">
+    {cfg.runs.map((r) => (
+      <DropdownMenuItem
+        key={r.id}
+        className="gap-2"
+        onSelect={() => cfg.onSelect(r.id)}
+      >
+        <RunDot status={r.status} />
+        {r.label}
+      </DropdownMenuItem>
+    ))}
+    {cfg.runs.length > 0 && <DropdownMenuSeparator />}
+    <DropdownMenuItem onSelect={cfg.onRun} className="gap-2 font-medium">
+      <UilPlay className="size-4 text-brand-mint" />
+      {cfg.runLabel}
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+)
+
+const Section = ({
+  title,
+  active,
+  children,
+}: {
+  title: string
+  active: boolean
+  children: React.ReactNode
+}) => (
+  <div
+    className={cn(
+      "rounded-md border px-3 py-2.5",
+      active
+        ? "border-brand-deep-purple/40 bg-brand-deep-purple/5"
+        : "border-neutral-200"
+    )}
+  >
+    <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground/45">
+      {title}
+    </div>
+    {children}
+  </div>
+)
+
+const readout = (p: SelectorProps) => {
+  if (p.activeSource === "example") return "Example"
+  if (p.activeSource === "action") return "Test data · action result"
+  const run = p.executions.find((r) => r.id === p.selectedRunId)
+  return run ? `Real data · ${run.label}` : "Real data"
+}
+
+/* ---------------- ONE-option chooser body (used by popover) ---------------- */
+
+const ChooserBody = (p: SelectorProps) => (
+  <div className="space-y-2">
+    <Section title="Real" active={p.activeSource === "execution"}>
+      {realRunner(p)}
+    </Section>
+    <Section title="Test" active={p.activeSource === "action"}>
+      {testRunner(p)}
+    </Section>
+    <button
+      type="button"
+      onClick={() => p.onSelectKind("example")}
+      className={cn(
+        "flex w-full items-center gap-2 rounded-md border px-3 py-2.5 text-[13px]",
+        p.selectedKind === "example"
+          ? "border-brand-deep-purple/40 bg-brand-deep-purple/5 font-medium text-brand-deep-purple"
+          : "border-neutral-200 text-foreground/70 hover:bg-neutral-50"
+      )}
+    >
+      <ProvDot provenance="example" />
+      Example
+      {p.selectedKind === "example" && (
+        <UilCheck className="ml-auto size-4 text-brand-deep-purple" />
+      )}
+    </button>
+  </div>
+)
+
+/* The cascading menu shared by one-cascade, one-pill, and the easy paths */
+const CascadeItems = (p: SelectorProps) => (
+  <>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="gap-2">
+        <ProvDot provenance="real" />
+        Real
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {p.executions.map((r) => (
+          <DropdownMenuItem
+            key={r.id}
+            className="gap-2"
+            onSelect={() => p.onSelectExecution(r.id)}
+          >
+            <RunDot status={r.status} />
+            {r.label}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="gap-2 font-medium"
+          onSelect={() => p.onRunTestExecution()}
+        >
+          <UilPlay className="size-4 text-brand-mint" />
+          Run execution
+        </DropdownMenuItem>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger className="gap-2">
+        <ProvDot provenance="test" />
+        Test
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent>
+        {p.actionResults.map((r) => (
+          <DropdownMenuItem
+            key={r.id}
+            className="gap-2"
+            onSelect={() => p.onSelectActionResult(r.id)}
+          >
+            <RunDot status={r.status} />
+            {r.label}
+          </DropdownMenuItem>
+        ))}
+        {p.actionResults.length > 0 && <DropdownMenuSeparator />}
+        <DropdownMenuItem
+          className="gap-2 font-medium"
+          onSelect={() => p.onRunAction()}
+        >
+          <UilPlay className="size-4 text-brand-mint" />
+          Run action
+        </DropdownMenuItem>
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+    <DropdownMenuItem
+      className="gap-2"
+      onSelect={() => p.onSelectKind("example")}
+    >
+      <ProvDot provenance="example" />
+      Example
+    </DropdownMenuItem>
+  </>
+)
+
+const OneTrigger = (p: SelectorProps) => (
+  <button
+    type="button"
+    className="inline-flex h-9 w-full items-center gap-2 rounded-md border border-neutral-200 bg-background px-3 text-[13px] text-foreground/80 hover:bg-neutral-50"
+  >
+    <ProvDot provenance={p.provenance} />
+    <span className="flex-1 truncate text-left">{readout(p)}</span>
+    <UilAngleDown className="size-4 shrink-0 text-foreground/40" />
+  </button>
+)
+
+const OneCascade = (p: SelectorProps) => (
+  <div className="space-y-2" data-visual-id="presentation-one">
+    <FieldLabel>Data</FieldLabel>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>{OneTrigger(p)}</DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="min-w-[280px]">
+        {CascadeItems(p)}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </div>
+)
+
+const OnePopover = (p: SelectorProps) => (
+  <div className="space-y-2" data-visual-id="presentation-one">
+    <FieldLabel>Data</FieldLabel>
+    <Popover>
+      <PopoverTrigger asChild>{OneTrigger(p)}</PopoverTrigger>
+      <PopoverContent align="start" className="w-[420px]">
+        {ChooserBody(p)}
+      </PopoverContent>
+    </Popover>
+  </div>
+)
+
+const OnePill = (p: SelectorProps) => (
+  <div className="space-y-2" data-visual-id="presentation-one">
+    <FieldLabel>Data</FieldLabel>
+    <div className="flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 py-1.5 pl-3 pr-1.5">
+      <ProvDot provenance={p.provenance} />
+      <span className="flex-1 truncate text-[13px] text-foreground/75">
+        {readout(p)}
+      </span>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            type="button"
+            className="rounded-full px-2.5 py-1 text-[12px] font-medium text-brand-blue-purple hover:bg-white"
+          >
+            Change
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-[280px]">
+          {CascadeItems(p)}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  </div>
+)
+
+const sourceLabel = (p: SelectorProps) =>
+  p.activeSource === "action"
+    ? "Test"
+    : p.activeSource === "example"
+      ? "Example"
+      : "Real"
+
+/* one-split — run picker + source-switch caret in one control */
+const OneSplit = (p: SelectorProps) => {
+  const isExample = p.activeSource === "example"
+  const cfg = activeRunCfg(p)
+  const selected = cfg.runs.find((r) => r.id === cfg.sel) ?? cfg.runs[0]
+  return (
+    <div className="space-y-2" data-visual-id="presentation-one">
+      <FieldLabel>Data</FieldLabel>
+      <ButtonGroup>
+        {isExample ? (
+          <div className="inline-flex h-9 min-w-[210px] items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 text-[13px] text-foreground/70">
+            <ProvDot provenance="example" />
+            <span className="flex-1 truncate text-left">Example</span>
+          </div>
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex h-9 min-w-[210px] items-center gap-2 rounded-md border border-neutral-200 bg-background px-3 text-[13px] text-foreground/80 hover:bg-neutral-50"
+              >
+                <ProvDot provenance={p.provenance} />
+                <span className="flex-1 truncate text-left">
+                  {selected ? selected.label : "No results yet"}
+                </span>
+              </button>
+            </DropdownMenuTrigger>
+            {RunMenuContent(cfg)}
+          </DropdownMenu>
+        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              title="Switch source"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-neutral-200 bg-background px-2 text-foreground/55 hover:bg-neutral-50"
+            >
+              <UilAngleDown className="size-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[280px]">
+            {CascadeItems(p)}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </ButtonGroup>
+    </div>
+  )
+}
+
+/* one-breadcrumb — source › run, each segment its own menu */
+const OneBreadcrumb = (p: SelectorProps) => {
+  const isExample = p.activeSource === "example"
+  const cfg = activeRunCfg(p)
+  const selected = cfg.runs.find((r) => r.id === cfg.sel) ?? cfg.runs[0]
+  const segment =
+    "inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-background px-2.5 py-1.5 text-[13px] text-foreground/80 hover:bg-neutral-50"
+  return (
+    <div className="space-y-2" data-visual-id="presentation-one">
+      <FieldLabel>Data</FieldLabel>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button type="button" className={segment}>
+                  <ProvDot provenance={p.provenance} />
+                  {sourceLabel(p)}
+                  <UilAngleDown className="size-3.5 text-foreground/40" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="min-w-[180px]">
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() =>
+                    p.onSelectExecution(p.selectedRunId ?? p.executions[0].id)
+                  }
+                >
+                  <ProvDot provenance="real" />
+                  Real
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() =>
+                    p.onSelectActionResult(
+                      p.selectedActionId ?? p.actionResults[0]?.id ?? ""
+                    )
+                  }
+                >
+                  <ProvDot provenance="test" />
+                  Test
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="gap-2"
+                  onSelect={() => p.onSelectKind("example")}
+                >
+                  <ProvDot provenance="example" />
+                  Example
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </BreadcrumbItem>
+          {!isExample && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button" className={segment}>
+                      {selected && <RunDot status={selected.status} />}
+                      {selected ? selected.label : "No results yet"}
+                      <UilAngleDown className="size-3.5 text-foreground/40" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  {RunMenuContent(cfg)}
+                </DropdownMenu>
+              </BreadcrumbItem>
+            </>
           )}
-        </div>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  )
+}
+
+/* ---------------- TWO-option (Real data | Example) ---------------- */
+
+type SubStyle = "stacked" | "subtabs"
+
+const twoDot = (p: SelectorProps, s: SourceDef): Provenance =>
+  s.kind === "example" ? "example" : p.activeSource === "action" ? "test" : "real"
+
+const RealExampleTop = (p: SelectorProps) => (
+  <div className="flex w-full items-stretch overflow-hidden rounded-md border border-neutral-200">
+    {p.sources.map((s) => {
+      const sel = s.kind === p.selectedKind
+      return (
+        <button
+          key={s.kind}
+          type="button"
+          disabled={!s.available}
+          onClick={() => p.onSelectKind(s.kind)}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-2 border-r border-neutral-200 px-3 py-2 text-[13px] last:border-r-0 transition-colors",
+            sel
+              ? "bg-brand-deep-purple/8 font-medium text-brand-deep-purple"
+              : "text-foreground/65 hover:bg-neutral-50",
+            !s.available && "cursor-not-allowed opacity-40"
+          )}
+        >
+          <ProvDot provenance={twoDot(p, s)} />
+          {s.label}
+        </button>
       )
     })}
   </div>
 )
 
-/* ---- 8. Pill Tabs ---- */
-const Pills = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-pills">
-    <FieldLabel>Data</FieldLabel>
-    <div className="flex flex-wrap items-center gap-1.5">
-      {p.sources.map((s) => {
-        const selected = s.kind === p.selectedKind
-        return (
+const RealSub = ({ p, style }: { p: SelectorProps; style: SubStyle }) => {
+  const isTest = p.activeSource === "action"
+  if (style === "stacked") {
+    return (
+      <div className="space-y-2">
+        <Section title="Real" active={!isTest}>
+          {realRunner(p)}
+        </Section>
+        <Section title="Test" active={isTest}>
+          {testRunner(p)}
+        </Section>
+      </div>
+    )
+  }
+  const goReal = () =>
+    p.onSelectExecution(p.selectedRunId ?? p.executions[0].id)
+  const goTest = () =>
+    p.onSelectActionResult(p.selectedActionId ?? p.actionResults[0]?.id ?? "")
+  return (
+    <div className="space-y-2 rounded-md border border-neutral-200 px-3 py-2.5">
+      <div className="flex gap-4 border-b border-neutral-200">
+        {[
+          { label: "Real", on: !isTest, go: goReal },
+          { label: "Test", on: isTest, go: goTest },
+        ].map((t) => (
           <button
-            key={s.kind}
+            key={t.label}
             type="button"
-            disabled={!s.available}
-            title={!s.available ? s.reason : undefined}
-            onClick={() => p.onSelectSource(s.kind)}
+            onClick={t.go}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] transition-colors",
-              selected
-                ? "bg-brand-mint text-brand-black"
-                : "text-foreground/60 hover:bg-neutral-100",
-              !s.available && "cursor-not-allowed opacity-40"
+              "-mb-px border-b-2 px-1 pb-1.5 text-[12px]",
+              t.on
+                ? "border-brand-deep-purple font-medium text-brand-deep-purple"
+                : "border-transparent text-foreground/60"
             )}
           >
-            <SourceGlyph kind={s.kind} className="size-3.5" />
-            {s.shortLabel}
+            {t.label}
           </button>
-        )
-      })}
-    </div>
-    <Sub p={p} />
-  </div>
-)
-
-/* ---- 9. Source Dropdown + dependent ---- */
-const DropdownVariant = (p: SelectorProps) => {
-  const active = activeRunnable(p)
-  return (
-    <div className="space-y-3" data-visual-id="variant-dropdown">
-      <div>
-        <FieldLabel>Data</FieldLabel>
-        <Select
-          value={p.selectedKind}
-          onValueChange={(v) => p.onSelectSource(v as SourceKind)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {p.sources.map((s) => (
-              <SelectItem key={s.kind} value={s.kind} disabled={!s.available}>
-                <span className="flex items-center gap-2">
-                  <SourceGlyph kind={s.kind} />
-                  {s.label}
-                  {!s.available && (
-                    <span className="text-foreground/40">— unavailable</span>
-                  )}
-                </span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      {active && (
-        <div>
-          <FieldLabel>
-            {active.kind === "inline" ? "Action result" : "Test run"}
-          </FieldLabel>
-          <Sub p={p} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ---- 10. Header Switch (icon-only) ---- */
-const Header = (p: SelectorProps) => (
-  <div
-    className="flex items-center gap-3 rounded-md bg-neutral-50 px-3 py-2"
-    data-visual-id="variant-header"
-  >
-    <span className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">
-      Data
-    </span>
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-neutral-200 bg-background px-3 text-[13px] font-medium text-foreground/80 hover:bg-neutral-50"
-        >
-          {(() => {
-            const active = p.sources.find((s) => s.kind === p.selectedKind)
-            return active ? (
-              <>
-                <SourceGlyph kind={active.kind} />
-                {active.label}
-              </>
-            ) : null
-          })()}
-          <UilAngleDown className="size-4 text-foreground/40" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        {p.sources.map((s) => (
-          <DropdownMenuItem
-            key={s.kind}
-            disabled={!s.available}
-            onSelect={() => p.onSelectSource(s.kind)}
-            className="gap-2"
-          >
-            <SourceGlyph kind={s.kind} />
-            {s.label}
-            {!s.available && (
-              <span className="ml-auto text-[11px] text-foreground/40">
-                unavailable
-              </span>
-            )}
-          </DropdownMenuItem>
         ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-    <Sub p={p} compact />
-  </div>
-)
-
-const activeSourceOf = (p: SelectorProps) =>
-  p.sources.find((s) => s.kind === p.selectedKind)
-
-const flattenRuns = (s?: SourceDef): RunOption[] =>
-  !s ? [] : s.groups ? s.groups.flatMap((g) => g.runs) : (s.runs ?? [])
-
-const Dot = ({ status }: { status: RunOption["status"] }) => (
-  <StatusIndicator
-    variant={STATUS_VARIANT[status]}
-    size="sm"
-    showIcon={false}
-    className="size-2.5 shrink-0"
-  />
-)
-
-const SourceMenuItems = (p: SelectorProps) =>
-  p.sources.map((s) => (
-    <DropdownMenuItem
-      key={s.kind}
-      disabled={!s.available}
-      onSelect={() => p.onSelectSource(s.kind)}
-      className="gap-2"
-    >
-      <SourceGlyph kind={s.kind} />
-      {s.label}
-      {!s.available && (
-        <span className="ml-auto text-[11px] text-foreground/40">
-          unavailable
-        </span>
-      )}
-    </DropdownMenuItem>
-  ))
-
-/* ---- 11. Merged Source + Run Pill ---- */
-const MergedPill = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
-  const runnable = activeRunnable(p)
-  return (
-    <div className="space-y-2" data-visual-id="variant-mergedPill">
-      <FieldLabel>Data</FieldLabel>
-      <div className="inline-flex h-9 w-fit items-stretch overflow-hidden rounded-md border border-neutral-200">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1.5 border-r border-neutral-200 px-3 text-[13px] font-medium text-foreground/80 hover:bg-neutral-50">
-              {active && <SourceGlyph kind={active.kind} />}
-              {active?.label}
-              <UilAngleDown className="size-4 text-foreground/40" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {SourceMenuItems(p)}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {runnable ? (
-          <Sub p={p} borderless />
-        ) : (
-          <span className="flex items-center px-3 text-[12px] text-foreground/40">
-            static — no run
-          </span>
-        )}
       </div>
+      {isTest ? testRunner(p) : realRunner(p)}
     </div>
   )
 }
 
-/* ---- 14. Accordion Sources ---- */
-const AccordionSrc = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-accordionSrc">
+const TwoComposed = ({
+  subStyle,
+  ...p
+}: SelectorProps & { subStyle: SubStyle }) => (
+  <div className="space-y-2" data-visual-id="presentation-two">
     <FieldLabel>Data</FieldLabel>
-    <div className="divide-y divide-neutral-100 overflow-hidden rounded-md border border-neutral-200">
-      {p.sources.map((s) => {
-        const selected = s.kind === p.selectedKind
-        return (
-          <div key={s.kind}>
-            <button
-              type="button"
-              disabled={!s.available}
-              onClick={() => p.onSelectSource(s.kind)}
-              className={cn(
-                "flex w-full items-center gap-2 px-3 py-2 text-[13px]",
-                selected && "bg-neutral-50 font-medium",
-                s.available
-                  ? "hover:bg-neutral-50"
-                  : "cursor-not-allowed opacity-40"
-              )}
-            >
-              <SourceGlyph kind={s.kind} />
-              {s.label}
-              {!s.available ? (
-                <span className="ml-auto text-[11px] text-foreground/45">
-                  unavailable
-                </span>
-              ) : (
-                s.runnable && (
-                  <UilAngleDown
-                    className={cn(
-                      "ml-auto size-4 text-foreground/40 transition-transform",
-                      selected && "rotate-180"
-                    )}
-                  />
-                )
-              )}
-            </button>
-            {selected && s.runnable && s.available && (
-              <div className="bg-neutral-50/60 px-3 pb-2 pt-1">
-                <Sub p={p} />
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
+    <RealExampleTop {...p} />
+    {p.selectedKind === "real" && <RealSub p={p} style={subStyle} />}
   </div>
 )
 
-/* ---- 15. Segmented + Status Badges ---- */
-const SegmentedBadges = (p: SelectorProps) => (
-  <div className="space-y-2" data-visual-id="variant-segmentedBadges">
-    <FieldLabel>Data</FieldLabel>
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      value={p.selectedKind}
-      onValueChange={(v) => v && p.onSelectSource(v as SourceKind)}
-      className="w-full"
-    >
-      {p.sources.map((s) => (
-        <ToggleGroupItem
-          key={s.kind}
-          value={s.kind}
-          disabled={!s.available}
-          title={!s.available ? s.reason : undefined}
-          className="flex-1 gap-1.5"
-        >
-          <SourceGlyph kind={s.kind} />
-          {s.shortLabel}
-          {s.available ? (
-            s.runnable && (
-              <span className="size-1.5 rounded-full bg-brand-mint" />
-            )
-          ) : (
-            <UilTimes className="size-3.5 text-foreground/30" />
-          )}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
-    <Sub p={p} />
-  </div>
-)
-
-/* ---- 16. Icon Toolbar + Readout ---- */
-const Toolbar = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
+/* two-toggle — "Use real data" switch reveals the runner; off = Example */
+const TwoToggle = (p: SelectorProps) => {
+  const on = p.selectedKind === "real"
   return (
-    <div className="space-y-2" data-visual-id="variant-toolbar">
+    <div className="space-y-2" data-visual-id="presentation-two">
       <FieldLabel>Data</FieldLabel>
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1 rounded-md border border-neutral-200 p-1">
-          {p.sources.map((s) => {
-            const selected = s.kind === p.selectedKind
-            return (
-              <button
-                key={s.kind}
-                type="button"
-                disabled={!s.available}
-                title={!s.available ? s.reason : s.label}
-                onClick={() => p.onSelectSource(s.kind)}
-                className={cn(
-                  "flex size-8 items-center justify-center rounded transition-colors",
-                  selected
-                    ? "bg-brand-deep-purple text-white"
-                    : "text-foreground/55 hover:bg-neutral-100",
-                  !s.available && "cursor-not-allowed opacity-30"
-                )}
-              >
-                <SourceGlyph kind={s.kind} />
-              </button>
-            )
-          })}
-        </div>
-        <span className="text-[13px] text-foreground/55">
-          Showing{" "}
-          <span className="font-semibold text-foreground/80">
-            {active?.label}
-          </span>
-        </span>
-        <Sub p={p} />
-      </div>
+      <label className="flex cursor-pointer items-center gap-2.5 text-[13px] text-foreground/75">
+        <Switch
+          checked={on}
+          onCheckedChange={(v) => p.onSelectKind(v ? "real" : "example")}
+        />
+        Use real data
+        {!on && <span className="text-foreground/45">· showing Example</span>}
+      </label>
+      {on && <RealSub p={p} style="stacked" />}
     </div>
   )
 }
 
-/* ---- 17. Inline Radio Group ---- */
-const Radios = (p: SelectorProps) => {
-  const runnable = activeRunnable(p)
+/* two-dropdown — compact 2-item source menu; Real reveals the runner */
+const TwoDropdown = (p: SelectorProps) => {
+  const isReal = p.selectedKind === "real"
   return (
-    <div className="space-y-3" data-visual-id="variant-radios">
-      <div>
-        <FieldLabel>Data</FieldLabel>
-        <div className="flex flex-wrap gap-x-5 gap-y-2">
-          {p.sources.map((s) => (
-            <label
-              key={s.kind}
-              className={cn(
-                "flex items-center gap-2 text-[13px]",
-                s.available
-                  ? "cursor-pointer text-foreground/80"
-                  : "cursor-not-allowed text-foreground/40"
-              )}
-              title={!s.available ? s.reason : undefined}
-            >
-              <input
-                type="radio"
-                name="source-radio"
-                disabled={!s.available}
-                checked={s.kind === p.selectedKind}
-                onChange={() => p.onSelectSource(s.kind)}
-                className="accent-brand-deep-purple"
-              />
-              <SourceGlyph kind={s.kind} />
-              {s.label}
-            </label>
-          ))}
-        </div>
-      </div>
-      {runnable && (
-        <div>
-          <FieldLabel>
-            {runnable.kind === "inline" ? "Action result" : "Test run"}
-          </FieldLabel>
-          <Sub p={p} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ---- 18. Vertical Tabs (left) ---- */
-const VTabs = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
-  const runnable = activeRunnable(p)
-  return (
-    <div data-visual-id="variant-vtabs">
-      <FieldLabel>Data</FieldLabel>
-      <div className="flex gap-3">
-        <div className="flex w-[150px] shrink-0 flex-col gap-0.5 border-r border-neutral-100 pr-2">
-          {p.sources.map((s) => {
-            const selected = s.kind === p.selectedKind
-            return (
-              <button
-                key={s.kind}
-                type="button"
-                disabled={!s.available}
-                title={!s.available ? s.reason : undefined}
-                onClick={() => p.onSelectSource(s.kind)}
-                className={cn(
-                  "flex items-center gap-2 rounded px-2 py-1.5 text-left text-[13px]",
-                  selected
-                    ? "bg-brand-deep-purple/8 font-medium text-brand-deep-purple"
-                    : "text-foreground/65 hover:bg-neutral-50",
-                  !s.available && "cursor-not-allowed opacity-40"
-                )}
-              >
-                <SourceGlyph kind={s.kind} />
-                {s.shortLabel}
-              </button>
-            )
-          })}
-        </div>
-        <div className="flex-1 pt-1">
-          <div className="mb-2 text-[13px] font-medium text-foreground/80">
-            {active?.label}
-          </div>
-          {runnable ? (
-            <Sub p={p} />
-          ) : (
-            <span className="text-[12px] text-foreground/45">
-              Static source — no run needed
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* ---- 19. Consolidated Picker ---- */
-const PopoverPicker = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
-  const selRun = flattenRuns(activeRunnable(p)).find(
-    (r) => r.id === p.selectedRunId
-  )
-  return (
-    <div className="space-y-2" data-visual-id="variant-popoverPicker">
+    <div className="space-y-2" data-visual-id="presentation-two">
       <FieldLabel>Data</FieldLabel>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="flex h-9 w-full items-center gap-2 rounded-md border border-neutral-200 bg-background px-3 text-[13px] text-foreground/80 hover:bg-neutral-50"
+            className="inline-flex h-9 w-full items-center gap-2 rounded-md border border-neutral-200 bg-background px-3 text-[13px] text-foreground/80 hover:bg-neutral-50"
           >
-            {active && <SourceGlyph kind={active.kind} />}
+            <ProvDot provenance={isReal ? p.provenance : "example"} />
             <span className="flex-1 truncate text-left">
-              {active?.label}
-              {selRun && (
-                <span className="text-foreground/45"> · {selRun.label}</span>
-              )}
+              {isReal ? "Real data" : "Example"}
             </span>
-            <UilAngleDown className="size-4 text-foreground/40" />
+            <UilAngleDown className="size-4 shrink-0 text-foreground/40" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-[280px]">
-          {p.sources.map((s) =>
-            s.runnable && s.available ? (
-              <DropdownMenuSub key={s.kind}>
-                <DropdownMenuSubTrigger className="gap-2">
-                  <SourceGlyph kind={s.kind} />
-                  {s.label}
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  {flattenRuns(s).map((r) => (
-                    <DropdownMenuItem
-                      key={r.id}
-                      className="gap-2"
-                      onSelect={() => {
-                        p.onSelectSource(s.kind)
-                        p.onSelectRun(r)
-                      }}
-                    >
-                      <Dot status={r.status} />
-                      {r.label}
-                    </DropdownMenuItem>
-                  ))}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="gap-2 font-medium"
-                    onSelect={() => {
-                      p.onSelectSource(s.kind)
-                      p.onRunNew()
-                    }}
-                  >
-                    <UilPlay className="size-4 text-brand-mint" />
-                    {s.runVerb}
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-            ) : (
-              <DropdownMenuItem
-                key={s.kind}
-                disabled={!s.available}
-                onSelect={() => p.onSelectSource(s.kind)}
-                className="gap-2"
-              >
-                <SourceGlyph kind={s.kind} />
-                {s.label}
-                {!s.available && (
-                  <span className="ml-auto text-[11px] text-foreground/40">
-                    unavailable
-                  </span>
-                )}
-              </DropdownMenuItem>
-            )
-          )}
+        <DropdownMenuContent align="start" className="min-w-[220px]">
+          <DropdownMenuItem
+            className="gap-2"
+            onSelect={() => p.onSelectKind("real")}
+          >
+            <ProvDot provenance="real" />
+            Real data
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="gap-2"
+            onSelect={() => p.onSelectKind("example")}
+          >
+            <ProvDot provenance="example" />
+            Example
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      {isReal && <RealSub p={p} style="stacked" />}
     </div>
   )
 }
 
-/* ---- 20. Dependency Breadcrumb ---- */
-const Breadcrumb = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
-  return (
-    <div className="space-y-2" data-visual-id="variant-breadcrumb">
-      <FieldLabel>Data</FieldLabel>
-      <div className="flex flex-wrap items-center gap-1.5 text-[13px]">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-1.5 rounded-md border border-neutral-200 px-2.5 py-1.5 font-medium text-foreground/80 hover:bg-neutral-50">
-              {active && <SourceGlyph kind={active.kind} />}
-              {active?.label}
-              <UilAngleDown className="size-4 opacity-60" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            {SourceMenuItems(p)}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {activeRunnable(p) && (
-          <>
-            <UilAngleRight className="size-4 text-foreground/30" />
-            <Sub p={p} />
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
+/* ---------------- THREE-option (flat Real | Test | Example) ---------------- */
 
-const ProvDot = ({ isReal }: { isReal: boolean }) => (
-  <span
-    className={cn(
-      "size-2 shrink-0 rounded-full",
-      isReal ? "bg-brand-mint" : "border border-foreground/40"
-    )}
-  />
+const flatDot = (kind: SourceKind): Provenance =>
+  kind === "real" ? "real" : kind === "test" ? "test" : "example"
+
+/* three-segmented — peers Real | Test | Example; Real/Test reveal the picker
+   directly (no inner tab list) */
+const ThreeSegmented = (p: SelectorProps) => (
+  <div className="space-y-2" data-visual-id="presentation-three">
+    <FieldLabel>Data</FieldLabel>
+    <div className="flex w-full items-stretch overflow-hidden rounded-md border border-neutral-200">
+      {p.sources.map((s) => (
+        <button
+          key={s.kind}
+          type="button"
+          disabled={!s.available}
+          onClick={() => p.onSelectKind(s.kind)}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-1.5 border-r border-neutral-200 px-3 py-2 text-[13px] last:border-r-0 transition-colors",
+            s.kind === p.selectedKind
+              ? "bg-brand-deep-purple/8 font-medium text-brand-deep-purple"
+              : "text-foreground/65 hover:bg-neutral-50",
+            !s.available && "cursor-not-allowed opacity-40"
+          )}
+        >
+          <ProvDot provenance={flatDot(s.kind)} />
+          {s.label}
+        </button>
+      ))}
+    </div>
+    {p.selectedKind === "real" && realRunner(p, true)}
+    {p.selectedKind === "test" && testRunner(p, true)}
+  </div>
 )
 
-/* ---- 19. Easy Path (progressive disclosure) ---- */
-const EasyPath = (p: SelectorProps) => {
-  const [open, setOpen] = useState(false)
-  const active = activeSourceOf(p)
-  const prov = active ? provenanceOf(active.kind) : undefined
+/* ---------------- EASY path ---------------- */
 
-  if (!open) {
-    return (
-      <div
-        className="flex flex-wrap items-center gap-1.5 text-[12px] text-foreground/55"
-        data-visual-id="variant-easyPath"
-      >
-        {prov && <ProvDot isReal={prov.isReal} />}
-        <span>{prov?.label ?? "No reference data for this step yet"}</span>
+type LineStyle = "dot" | "banner" | "chip"
+
+const EasyLine = ({ lineStyle, ...p }: SelectorProps & { lineStyle: LineStyle }) => {
+  const change = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
         <button
           type="button"
-          onClick={() => setOpen(true)}
           className="font-medium text-brand-blue-purple hover:underline"
         >
-          · Change
+          Change
         </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[280px]">
+        {CascadeItems(p)}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+  const copy = PROVENANCE_COPY[p.provenance]
+  if (lineStyle === "banner") {
+    return (
+      <div
+        className="flex items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-[12px] text-foreground/60"
+        data-visual-id="presentation-easy"
+      >
+        <ProvDot provenance={p.provenance} />
+        <span className="flex-1">{copy}</span>
+        {change}
       </div>
     )
   }
-
+  if (lineStyle === "chip") {
+    return (
+      <div
+        className="flex flex-wrap items-center gap-2 text-[12px] text-foreground/55"
+        data-visual-id="presentation-easy"
+      >
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1">
+          <ProvDot provenance={p.provenance} />
+          {p.provenance === "real"
+            ? "Real data"
+            : p.provenance === "test"
+              ? "Test data"
+              : "Example"}
+        </span>
+        <span>·</span>
+        {change}
+      </div>
+    )
+  }
   return (
     <div
-      className="space-y-2 rounded-md border border-dashed border-neutral-200 p-2.5"
-      data-visual-id="variant-easyPath"
+      className="flex flex-wrap items-center gap-1.5 text-[12px] text-foreground/55"
+      data-visual-id="presentation-easy"
     >
-      <div className="flex items-center justify-between">
-        <FieldLabel>Data</FieldLabel>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="text-[12px] font-medium text-brand-blue-purple hover:underline"
-        >
-          Done
-        </button>
-      </div>
-      <div className="flex w-full items-stretch overflow-hidden rounded-md border border-neutral-200">
-        {p.sources.map((s) => {
-          const selected = s.kind === p.selectedKind
-          const sProv = provenanceOf(s.kind)
-          return (
-            <button
-              key={s.kind}
-              type="button"
-              disabled={!s.available}
-              title={!s.available ? s.reason : undefined}
-              onClick={() => p.onSelectSource(s.kind)}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 border-r border-neutral-200 px-3 py-2 text-[13px] last:border-r-0 transition-colors",
-                selected
-                  ? "bg-brand-deep-purple/8 font-medium text-brand-deep-purple"
-                  : "text-foreground/65 hover:bg-neutral-50",
-                !s.available && "cursor-not-allowed opacity-40"
-              )}
-            >
-              {sProv.isReal && <ProvDot isReal />}
-              {s.label}
-            </button>
-          )
-        })}
-      </div>
-      <Sub p={p} />
+      <ProvDot provenance={p.provenance} />
+      <span>{copy}</span>
+      <span>·</span>
+      {change}
     </div>
   )
 }
 
-/* ---- 20. Zero-choice (provenance only) ---- */
-const ZeroChoice = (p: SelectorProps) => {
-  const active = activeSourceOf(p)
-  const prov = active ? provenanceOf(active.kind) : undefined
-  return (
-    <div
-      className="flex items-center gap-2 text-[12px] text-foreground/55"
-      data-visual-id="variant-zeroChoice"
-    >
-      {prov ? (
-        <>
-          <ProvDot isReal={prov.isReal} />
-          <span>{prov.isReal ? "Real data" : "Example data"}</span>
-        </>
-      ) : (
-        <span>No reference data for this step yet</span>
-      )}
-    </div>
-  )
-}
+/* ---------------- registry ---------------- */
 
-const REGISTRY: Record<VariantId, (p: SelectorProps) => React.ReactNode> = {
-  segmented: Segmented,
-  reflow: Reflow,
-  stacked: Stacked,
-  tabs: TabsVariant,
-  chips: Chips,
-  disclosure: Disclosure,
-  cards: Cards,
-  pills: Pills,
-  dropdown: DropdownVariant,
-  header: Header,
-  mergedPill: MergedPill,
-  accordionSrc: AccordionSrc,
-  segmentedBadges: SegmentedBadges,
-  toolbar: Toolbar,
-  radios: Radios,
-  vtabs: VTabs,
-  popoverPicker: PopoverPicker,
-  breadcrumb: Breadcrumb,
-  easyPath: EasyPath,
-  zeroChoice: ZeroChoice,
+const mk =
+  <X extends object>(Comp: (p: SelectorProps & X) => React.ReactNode, extra: X) =>
+  (p: SelectorProps) =>
+    Comp({ ...p, ...extra })
+
+const VARIANT_REGISTRY: Record<Variant, (p: SelectorProps) => React.ReactNode> = {
+  "one-cascade": OneCascade,
+  "one-popover": OnePopover,
+  "one-pill": OnePill,
+  "one-split": OneSplit,
+  "one-breadcrumb": OneBreadcrumb,
+  "two-seg-stacked": mk(TwoComposed, { subStyle: "stacked" }),
+  "two-seg-subtabs": mk(TwoComposed, { subStyle: "subtabs" }),
+  "two-toggle": TwoToggle,
+  "two-dropdown": TwoDropdown,
+  "three-segmented": ThreeSegmented,
+  "easy-dot": mk(EasyLine, { lineStyle: "dot" }),
+  "easy-banner": mk(EasyLine, { lineStyle: "banner" }),
+  "easy-chip": mk(EasyLine, { lineStyle: "chip" }),
 }
 
 export function SourceSelector(props: SelectorProps) {
-  return <>{REGISTRY[props.variant](props)}</>
+  const Comp = VARIANT_REGISTRY[props.variant]
+  return <Comp {...props} />
 }

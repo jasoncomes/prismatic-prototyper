@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import UilTimes from "@iconscout/react-unicons/icons/uil-times"
 import UilClipboardNotes from "@iconscout/react-unicons/icons/uil-clipboard-notes"
 import UilFlask from "@iconscout/react-unicons/icons/uil-flask"
+import UilBolt from "@iconscout/react-unicons/icons/uil-bolt"
 import UilSpinner from "@iconscout/react-unicons/icons/uil-spinner"
 
 import { cn } from "@/lib/utils"
@@ -23,90 +24,163 @@ import {
 import { SearchInput } from "@/components/search-input"
 
 import {
-  Availability,
-  PAYLOAD_BY_SOURCE,
+  CAPTURED_RUNS,
+  NEW_ACTION_RESULT,
+  PAYLOAD,
   STEPS,
-  buildBucketsSources,
-  buildPeerSources,
-  buildSampleSources,
-  buildTieredSources,
+  TEST_RESULTS,
+  buildSources,
 } from "./mockData"
 import { PayloadTree } from "./PayloadTree"
-import { SourceSelector } from "./SourceSelector"
+import { SourceSelector, type ActiveSource } from "./SourceSelector"
 import type {
-  NamingScheme,
-  RunOption,
+  Availability,
+  Presentation,
+  Provenance,
   SourceKind,
-  SourceModel,
-  VariantId,
+  Variant,
 } from "./types"
 
 interface ReferencePanelProps {
-  variant: VariantId
-  sourceModel: SourceModel
+  presentation: Presentation
+  variant: Variant
   availability: Availability
-  naming: NamingScheme
 }
 
 export function ReferencePanel({
+  presentation,
   variant,
-  sourceModel,
   availability,
-  naming,
 }: ReferencePanelProps) {
   const [stepSlug, setStepSlug] = useState(STEPS[1].slug)
-  const [requestedKind, setRequestedKind] = useState<SourceKind | null>(null)
-  const [selectedRunId, setSelectedRunId] = useState<string | undefined>()
+  const [selectedKind, setSelectedKind] = useState<SourceKind>("real")
+  const [realActive, setRealActive] = useState<"execution" | "action">(
+    "execution"
+  )
+  const [selectedRunId, setSelectedRunId] = useState<string>(CAPTURED_RUNS[0].id)
+  const [selectedActionId, setSelectedActionId] = useState<string>(
+    TEST_RESULTS[0].id
+  )
+  const [ranAction, setRanAction] = useState(false)
+  const [running, setRunning] = useState<"none" | "execution" | "action">(
+    "none"
+  )
+
+  const actionResults = ranAction
+    ? [NEW_ACTION_RESULT, ...TEST_RESULTS]
+    : TEST_RESULTS
   const [path, setPath] = useState("")
   const [query, setQuery] = useState("")
-  const [running, setRunning] = useState(false)
 
-  const sources = useMemo(() => {
-    if (sourceModel === "peers") return buildPeerSources(availability, naming)
-    if (sourceModel === "tiered")
-      return buildTieredSources(availability, naming)
-    if (sourceModel === "buckets")
-      return buildBucketsSources(availability, naming)
-    return buildSampleSources(availability, naming)
-  }, [sourceModel, availability, naming])
+  const sources = useMemo(
+    () => buildSources(presentation, availability),
+    [presentation, availability]
+  )
 
   const firstAvailable = sources.find((s) => s.available)?.kind
-  const requestedAvailable = sources.find(
-    (s) => s.kind === requestedKind && s.available
+  const selectedAvailable = sources.find(
+    (s) => s.kind === selectedKind && s.available
   )
-  const effectiveKind = (requestedAvailable?.kind ??
-    firstAvailable) as SourceKind | undefined
-
-  const activeSource = sources.find((s) => s.kind === effectiveKind)
-  const runs = activeSource?.groups
-    ? activeSource.groups.flatMap((g) => g.runs)
-    : (activeSource?.runs ?? [])
-  const effectiveRunId =
-    runs.find((r) => r.id === selectedRunId)?.id ?? runs[0]?.id
+  const effectiveKind = (selectedAvailable?.kind ?? firstAvailable) as
+    | SourceKind
+    | undefined
 
   useEffect(() => {
-    setSelectedRunId(undefined)
-  }, [effectiveKind, stepSlug])
+    setRunning("none")
+    setRanAction(false)
+    setSelectedRunId(CAPTURED_RUNS[0].id)
+    setSelectedActionId(TEST_RESULTS[0].id)
+    setRealActive("execution")
+    setSelectedKind("real")
+  }, [stepSlug, presentation])
 
-  const onRunNew = () => {
-    setRunning(true)
+  const activeSource: ActiveSource = !effectiveKind
+    ? "example"
+    : effectiveKind === "example"
+      ? "example"
+      : effectiveKind === "test"
+        ? "action"
+        : presentation === "three"
+          ? "execution"
+          : realActive
+
+  const enterReal = (sub: "execution" | "action") => {
+    if (presentation === "three")
+      setSelectedKind(sub === "action" ? "test" : "real")
+    else {
+      setSelectedKind("real")
+      setRealActive(sub)
+    }
+  }
+
+  const onSelectKind = (k: SourceKind) => {
+    setSelectedKind(k)
+    if (k === "real" && presentation !== "three") setRealActive("execution")
+  }
+  const onSelectExecution = (id: string) => {
+    enterReal("execution")
+    setSelectedRunId(id)
+  }
+  const onRunTestExecution = () => {
+    enterReal("execution")
+    setRunning("execution")
     window.setTimeout(() => {
-      setRunning(false)
-      if (runs[0]) setSelectedRunId(runs[0].id)
+      setRunning("none")
+      setSelectedRunId(CAPTURED_RUNS[0].id)
+    }, 900)
+  }
+  const onSelectActionResult = (id: string) => {
+    enterReal("action")
+    setSelectedActionId(id)
+  }
+  const onRunAction = () => {
+    enterReal("action")
+    setRunning("action")
+    window.setTimeout(() => {
+      setRunning("none")
+      setRanAction(true)
+      setSelectedActionId(NEW_ACTION_RESULT.id)
     }, 900)
   }
 
-  const onSelectRun = (run: RunOption) => setSelectedRunId(run.id)
+  const provenance: Provenance =
+    activeSource === "example"
+      ? "example"
+      : activeSource === "action"
+        ? "test"
+        : "real"
 
-  const sampleShowsSchema = effectiveKind === "sample" && availability.schema
+  const exampleDoc = availability.schema ? PAYLOAD.schema : PAYLOAD.example
+  const actionNotRun = activeSource === "action" && actionResults.length === 0
   const doc = !effectiveKind
     ? undefined
-    : effectiveKind === "sample"
-      ? availability.schema
-        ? PAYLOAD_BY_SOURCE.schema
-        : PAYLOAD_BY_SOURCE.example
-      : PAYLOAD_BY_SOURCE[effectiveKind]
-  const noneAvailable = !effectiveKind
+    : activeSource === "example"
+      ? exampleDoc
+      : activeSource === "action"
+        ? actionResults.length > 0
+          ? PAYLOAD.test
+          : undefined
+        : PAYLOAD.real
+
+  const selector = (
+    <SourceSelector
+      presentation={presentation}
+      variant={variant}
+      sources={sources}
+      selectedKind={effectiveKind ?? sources[0].kind}
+      onSelectKind={onSelectKind}
+      activeSource={activeSource}
+      provenance={provenance}
+      executions={CAPTURED_RUNS}
+      selectedRunId={selectedRunId}
+      onSelectExecution={onSelectExecution}
+      onRunTestExecution={onRunTestExecution}
+      actionResults={actionResults}
+      selectedActionId={selectedActionId}
+      onSelectActionResult={onSelectActionResult}
+      onRunAction={onRunAction}
+    />
+  )
 
   return (
     <div
@@ -144,15 +218,7 @@ export function ReferencePanel({
           </Select>
         </div>
 
-        <SourceSelector
-          variant={variant}
-          sources={sources}
-          selectedKind={effectiveKind ?? sources[0].kind}
-          onSelectSource={setRequestedKind}
-          selectedRunId={effectiveRunId}
-          onSelectRun={onSelectRun}
-          onRunNew={onRunNew}
-        />
+        {presentation !== "easy" && selector}
       </div>
 
       <div className="space-y-2.5 px-5 pb-2 pt-1">
@@ -185,13 +251,19 @@ export function ReferencePanel({
         />
       </div>
 
-      <div className="max-h-[320px] min-h-[200px] overflow-auto px-5 pb-4">
-        {running ? (
+      <div className="max-h-[360px] min-h-[210px] overflow-auto px-5 pb-4">
+        {presentation === "easy" && <div className="mb-2">{selector}</div>}
+
+        {running !== "none" ? (
           <div className="flex h-[200px] flex-col items-center justify-center gap-3 text-foreground/50">
             <UilSpinner className="size-7 animate-spin" />
-            <span className="text-sm">Running execution…</span>
+            <span className="text-sm">
+              {running === "execution"
+                ? "Running execution…"
+                : "Running action…"}
+            </span>
           </div>
-        ) : noneAvailable ? (
+        ) : !effectiveKind ? (
           <Empty className="h-[200px] border-0">
             <EmptyHeader>
               <EmptyMedia variant="icon">
@@ -199,23 +271,39 @@ export function ReferencePanel({
               </EmptyMedia>
               <EmptyTitle>No reference data yet</EmptyTitle>
               <EmptyDescription>
-                This step has no data captured. Run a test execution to see
-                real data here.
+                Run a test execution or the action to see data here.
               </EmptyDescription>
             </EmptyHeader>
-            <Button size="sm" onClick={onRunNew} className="gap-1.5">
+            <Button size="sm" onClick={onRunTestExecution} className="gap-1.5">
               <UilFlask className="size-4" />
-              Run a test execution
+              Run execution
+            </Button>
+          </Empty>
+        ) : actionNotRun ? (
+          <Empty className="h-[200px] border-0">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <UilBolt />
+              </EmptyMedia>
+              <EmptyTitle>Run the action to fetch test data</EmptyTitle>
+              <EmptyDescription>
+                We'll call the action with test inputs and show the real
+                response.
+              </EmptyDescription>
+            </EmptyHeader>
+            <Button size="sm" onClick={onRunAction} className="gap-1.5">
+              <UilBolt className="size-4" />
+              Run action
             </Button>
           </Empty>
         ) : (
           doc && (
             <>
-              {effectiveKind === "sample" && (
+              {activeSource === "example" && (
                 <div className="mb-2 rounded bg-neutral-50 px-2.5 py-1.5 text-[12px] text-foreground/55">
-                  {sampleShowsSchema
-                    ? "Showing Output Schema — Example Payload is the fallback."
-                    : "Showing Example Payload — no Output Schema defined for this step."}
+                  {availability.schema
+                    ? "Showing the output schema — example payload is the fallback."
+                    : "Showing an example payload — no output schema defined."}
                 </div>
               )}
               <PayloadTree

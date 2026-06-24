@@ -2,44 +2,44 @@ import { useState } from "react"
 
 import { ReferencePanel } from "./reference/ReferencePanel"
 import { VariantSwitcher } from "./reference/VariantSwitcher"
-import type { Availability } from "./reference/mockData"
-import type { NamingScheme, SourceModel, VariantId } from "./reference/types"
+import { VARIATIONS } from "./reference/mockData"
+import type { Availability, Presentation, Variant } from "./reference/types"
 
 function App() {
-  const [variant, setVariant] = useState<VariantId>("segmented")
-  const [sourceModel, setSourceModel] = useState<SourceModel>("peers")
-  const [naming, setNaming] = useState<NamingScheme>("descriptive")
+  const [presentation, setPresentation] = useState<Presentation>("one")
+  const [variant, setVariant] = useState<Variant>(VARIATIONS.one[0].id)
   const [availability, setAvailability] = useState<Availability>({
-    test: true,
+    real: true,
     inline: true,
     schema: true,
     example: false,
   })
 
+  const onPresentation = (p: Presentation) => {
+    setPresentation(p)
+    setVariant(VARIATIONS[p][0].id)
+  }
+
   return (
     <div className="min-h-screen bg-neutral-100">
       <VariantSwitcher
+        presentation={presentation}
+        onPresentation={onPresentation}
         variant={variant}
         onVariant={setVariant}
-        sourceModel={sourceModel}
-        onSourceModel={setSourceModel}
-        naming={naming}
-        onNaming={setNaming}
         availability={availability}
         onAvailability={setAvailability}
       />
 
       <div className="mx-auto max-w-[1180px] px-6 py-8">
         <p className="mb-5 max-w-2xl text-[13px] text-foreground/55">
-          Pick a field in the tree to insert its reference path. Toggle data
-          sources, open the run / inline-action sub-dropdowns, and flip layout
-          variants above to compare.
+          Pick a top-level option, then browse the variation examples that fit
+          it. Try the inline “Run action” flow and toggle per-step availability.
         </p>
         <ReferencePanel
+          presentation={presentation}
           variant={variant}
-          sourceModel={sourceModel}
           availability={availability}
-          naming={naming}
         />
       </div>
     </div>
