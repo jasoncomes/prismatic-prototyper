@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react"
 import UilTimes from "@iconscout/react-unicons/icons/uil-times"
 import UilClipboardNotes from "@iconscout/react-unicons/icons/uil-clipboard-notes"
 import UilFlask from "@iconscout/react-unicons/icons/uil-flask"
-import UilBolt from "@iconscout/react-unicons/icons/uil-bolt"
 import UilSpinner from "@iconscout/react-unicons/icons/uil-spinner"
 
 import { cn } from "@/lib/utils"
@@ -23,17 +22,11 @@ import {
 } from "@/components/ui/empty"
 import { SearchInput } from "@/components/search-input"
 
-import {
-  CAPTURED_RUNS,
-  NEW_ACTION_RESULT,
-  PAYLOAD,
-  STEPS,
-  TEST_RESULTS,
-  buildSources,
-} from "./mockData"
+import { CAPTURED_RUNS, PAYLOAD, STEPS, autoKind, buildSources } from "./mockData"
 import { PayloadTree } from "./PayloadTree"
 import { SourceSelector, type ActiveSource } from "./SourceSelector"
 import type {
+  Audience,
   Availability,
   Presentation,
   Provenance,
@@ -45,30 +38,23 @@ interface ReferencePanelProps {
   presentation: Presentation
   variant: Variant
   availability: Availability
+  audience: Audience
 }
 
 export function ReferencePanel({
   presentation,
   variant,
   availability,
+  audience,
 }: ReferencePanelProps) {
   const [stepSlug, setStepSlug] = useState(STEPS[1].slug)
-  const [selectedKind, setSelectedKind] = useState<SourceKind>("real")
-  const [realActive, setRealActive] = useState<"execution" | "action">(
-    "execution"
-  )
+  const auto = useMemo(() => autoKind(availability), [availability])
+  const [selectedKind, setSelectedKind] = useState<SourceKind>(auto ?? "real")
+  const [overridden, setOverridden] = useState(false)
   const [selectedRunId, setSelectedRunId] = useState<string>(CAPTURED_RUNS[0].id)
-  const [selectedActionId, setSelectedActionId] = useState<string>(
-    TEST_RESULTS[0].id
-  )
-  const [ranAction, setRanAction] = useState(false)
   const [running, setRunning] = useState<"none" | "execution" | "action">(
     "none"
   )
-
-  const actionResults = ranAction
-    ? [NEW_ACTION_RESULT, ...TEST_RESULTS]
-    : TEST_RESULTS
   const [path, setPath] = useState("")
   const [query, setQuery] = useState("")
 
@@ -77,22 +63,30 @@ export function ReferencePanel({
     [presentation, availability]
   )
 
-  const firstAvailable = sources.find((s) => s.available)?.kind
-  const selectedAvailable = sources.find(
-    (s) => s.kind === selectedKind && s.available
-  )
-  const effectiveKind = (selectedAvailable?.kind ?? firstAvailable) as
-    | SourceKind
-    | undefined
+  const kindAvailable = (k: SourceKind) =>
+    k === "real"
+      ? availability.real
+      : k === "test"
+        ? availability.inline
+        : availability.schema || availability.example
+  // Default to the auto pick; only honor the user's choice once they override.
+  const effectiveKind = (
+    overridden && kindAvailable(selectedKind) ? selectedKind : auto
+  ) as SourceKind | undefined
 
+  // On step / availability change: reset to auto, and if the auto pick is the
+  // inline step, simulate invoking it on open (brief fetch → the one result).
   useEffect(() => {
     setRunning("none")
-    setRanAction(false)
     setSelectedRunId(CAPTURED_RUNS[0].id)
-    setSelectedActionId(TEST_RESULTS[0].id)
-    setRealActive("execution")
-    setSelectedKind("real")
-  }, [stepSlug, presentation])
+    setOverridden(false)
+    setSelectedKind(auto ?? "real")
+    if (auto === "test") {
+      setRunning("action")
+      const t = window.setTimeout(() => setRunning("none"), 700)
+      return () => window.clearTimeout(t)
+    }
+  }, [stepSlug, presentation, auto])
 
   const activeSource: ActiveSource = !effectiveKind
     ? "example"
@@ -100,47 +94,29 @@ export function ReferencePanel({
       ? "example"
       : effectiveKind === "test"
         ? "action"
-        : presentation === "three"
-          ? "execution"
-          : realActive
-
-  const enterReal = (sub: "execution" | "action") => {
-    if (presentation === "three")
-      setSelectedKind(sub === "action" ? "test" : "real")
-    else {
-      setSelectedKind("real")
-      setRealActive(sub)
-    }
-  }
+        : "execution"
 
   const onSelectKind = (k: SourceKind) => {
+    setOverridden(true)
     setSelectedKind(k)
-    if (k === "real" && presentation !== "three") setRealActive("execution")
   }
   const onSelectExecution = (id: string) => {
-    enterReal("execution")
+    setOverridden(true)
+    setSelectedKind("real")
     setSelectedRunId(id)
   }
   const onRunTestExecution = () => {
-    enterReal("execution")
+    setOverridden(true)
+    setSelectedKind("real")
     setRunning("execution")
     window.setTimeout(() => {
       setRunning("none")
       setSelectedRunId(CAPTURED_RUNS[0].id)
     }, 900)
   }
-  const onSelectActionResult = (id: string) => {
-    enterReal("action")
-    setSelectedActionId(id)
-  }
-  const onRunAction = () => {
-    enterReal("action")
-    setRunning("action")
-    window.setTimeout(() => {
-      setRunning("none")
-      setRanAction(true)
-      setSelectedActionId(NEW_ACTION_RESULT.id)
-    }, 900)
+  const onResetAuto = () => {
+    setOverridden(false)
+    setSelectedKind(auto ?? "real")
   }
 
   const provenance: Provenance =
@@ -151,15 +127,12 @@ export function ReferencePanel({
         : "real"
 
   const exampleDoc = availability.schema ? PAYLOAD.schema : PAYLOAD.example
-  const actionNotRun = activeSource === "action" && actionResults.length === 0
   const doc = !effectiveKind
     ? undefined
     : activeSource === "example"
       ? exampleDoc
       : activeSource === "action"
-        ? actionResults.length > 0
-          ? PAYLOAD.test
-          : undefined
+        ? PAYLOAD.test
         : PAYLOAD.real
 
   const selector = (
@@ -175,10 +148,11 @@ export function ReferencePanel({
       selectedRunId={selectedRunId}
       onSelectExecution={onSelectExecution}
       onRunTestExecution={onRunTestExecution}
-      actionResults={actionResults}
-      selectedActionId={selectedActionId}
-      onSelectActionResult={onSelectActionResult}
-      onRunAction={onRunAction}
+      hasTestRuns={availability.real}
+      stepRunnable={availability.inline}
+      audience={audience}
+      overridden={overridden}
+      onResetAuto={onResetAuto}
     />
   )
 
@@ -259,8 +233,8 @@ export function ReferencePanel({
             <UilSpinner className="size-7 animate-spin" />
             <span className="text-sm">
               {running === "execution"
-                ? "Running test…"
-                : "Running step…"}
+                ? "Fetching test run…"
+                : "Fetching this step's data…"}
             </span>
           </div>
         ) : !effectiveKind ? (
@@ -271,29 +245,10 @@ export function ReferencePanel({
               </EmptyMedia>
               <EmptyTitle>No reference data yet</EmptyTitle>
               <EmptyDescription>
-                Run a test or step to see data here.
+                Once this step has a test run, a runnable action, or an example,
+                its data shows up here automatically.
               </EmptyDescription>
             </EmptyHeader>
-            <Button size="sm" onClick={onRunTestExecution} className="gap-1.5">
-              <UilFlask className="size-4" />
-              Run test
-            </Button>
-          </Empty>
-        ) : actionNotRun ? (
-          <Empty className="h-[200px] border-0">
-            <EmptyHeader>
-              <EmptyMedia variant="icon">
-                <UilBolt />
-              </EmptyMedia>
-              <EmptyTitle>Run the step to fetch test data</EmptyTitle>
-              <EmptyDescription>
-                We'll call the step with test inputs and show the response.
-              </EmptyDescription>
-            </EmptyHeader>
-            <Button size="sm" onClick={onRunAction} className="gap-1.5">
-              <UilBolt className="size-4" />
-              Run step
-            </Button>
           </Empty>
         ) : (
           doc && (
@@ -301,8 +256,8 @@ export function ReferencePanel({
               {activeSource === "example" && (
                 <div className="mb-2 rounded bg-neutral-50 px-2.5 py-1.5 text-[12px] text-foreground/55">
                   {availability.schema
-                    ? "Showing the output schema — example payload is the fallback."
-                    : "Showing an example payload — no output schema defined."}
+                    ? "No test run yet — showing the step's output schema."
+                    : "No test run yet — showing an example payload."}
                 </div>
               )}
               <PayloadTree

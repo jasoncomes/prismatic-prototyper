@@ -2,46 +2,29 @@ import { cn } from "@/lib/utils"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { VARIATIONS } from "./mockData"
-import type { Availability, Presentation, Variant } from "./types"
+import type { Audience, Availability, Variant } from "./types"
 
 interface VariantSwitcherProps {
-  presentation: Presentation
-  onPresentation: (p: Presentation) => void
   variant: Variant
   onVariant: (v: Variant) => void
   availability: Availability
   onAvailability: (a: Availability) => void
+  audience: Audience
+  onAudience: (a: Audience) => void
 }
 
-const PRESENTATIONS: { id: Presentation; label: string; blurb: string }[] = [
-  {
-    id: "one",
-    label: "1 option",
-    blurb: "Single control; expands to Test Runs / Step / Example.",
-  },
-  // Temporarily hidden — uncomment to bring back the "2 options" presentation.
-  // {
-  //   id: "two",
-  //   label: "2 options",
-  //   blurb: "Test Runs | Example; Test Runs reveals run picker + Run step.",
-  // },
-  {
-    id: "three",
-    label: "3 options",
-    blurb: "Test Runs | Step | Example; Test Runs/Step reveal the picker.",
-  },
-  {
-    id: "easy",
-    label: "Easy path",
-    blurb: "Fields-first; quiet provenance line; Change reveals the choice.",
-  },
-]
+const ALL_VARIATIONS = [...VARIATIONS.easy, ...VARIATIONS.one]
 
 const AVAIL_KEYS: { key: keyof Availability; label: string }[] = [
-  { key: "real", label: "Test Runs" },
-  { key: "inline", label: "Step" },
+  { key: "real", label: "Test run exists" },
+  { key: "inline", label: "Step is runnable" },
   { key: "schema", label: "Output schema" },
   { key: "example", label: "Example payload" },
+]
+
+const AUDIENCES: { id: Audience; label: string }[] = [
+  { id: "ewb", label: "EWB (no change)" },
+  { id: "lowcode", label: "Low-code / Designer" },
 ]
 
 const Field = ({
@@ -60,43 +43,39 @@ const Field = ({
 )
 
 export function VariantSwitcher({
-  presentation,
-  onPresentation,
   variant,
   onVariant,
   availability,
   onAvailability,
+  audience,
+  onAudience,
 }: VariantSwitcherProps) {
-  const active = PRESENTATIONS.find((p) => p.id === presentation)!
-  const variations = VARIATIONS[presentation]
+  const current = ALL_VARIATIONS.find((v) => v.id === variant)
 
   return (
     <div className="sticky top-0 z-20 border-b border-neutral-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-[1180px] flex-col gap-3 px-6 py-3">
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40">
-            Reference Panel · source presentation
+            Reference Panel · variations
           </div>
-          <div className="text-sm font-semibold text-foreground">
-            <span className="text-brand-deep-purple">{active.label}</span>
-            <span className="ml-2 font-normal text-foreground/55">
-              {active.blurb}
-            </span>
+          <div className="text-sm font-semibold text-brand-deep-purple">
+            {current?.name}
           </div>
         </div>
 
         <div className="flex flex-wrap items-end gap-5">
-          <Field label="Top-level options">
+          <Field label="Audience">
             <ToggleGroup
               type="single"
               variant="outline"
               size="sm"
-              value={presentation}
-              onValueChange={(v) => v && onPresentation(v as Presentation)}
+              value={audience}
+              onValueChange={(v) => v && onAudience(v as Audience)}
             >
-              {PRESENTATIONS.map((p) => (
-                <ToggleGroupItem key={p.id} value={p.id}>
-                  {p.label}
+              {AUDIENCES.map((a) => (
+                <ToggleGroupItem key={a.id} value={a.id}>
+                  {a.label}
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
@@ -132,7 +111,7 @@ export function VariantSwitcher({
           <span className="text-[10px] font-semibold uppercase tracking-wide text-foreground/35">
             Variation
           </span>
-          {variations.map((v) => (
+          {ALL_VARIATIONS.map((v) => (
             <button
               key={v.id}
               type="button"

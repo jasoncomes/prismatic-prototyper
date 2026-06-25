@@ -1,11 +1,11 @@
 import type {
-  ActionInput,
   Availability,
   PayloadDoc,
   PayloadNode,
   Presentation,
   RunOption,
   SourceDef,
+  SourceKind,
   StepOption,
   Variant,
 } from "./types"
@@ -16,20 +16,9 @@ export const VARIATIONS: Record<
 > = {
   one: [
     { id: "one-cascade", name: "Cascading dropdown" },
-    { id: "one-popover", name: "Popover panel" },
     { id: "one-pill", name: "Readout pill" },
-    { id: "one-split", name: "Split button" },
-    { id: "one-breadcrumb", name: "Breadcrumb path" },
   ],
-  two: [
-    { id: "two-seg-stacked", name: "Segmented · stacked" },
-    { id: "two-seg-subtabs", name: "Segmented · sub-tabs" },
-    { id: "two-toggle", name: "Toggle switch" },
-    { id: "two-dropdown", name: "Dropdown top" },
-  ],
-  three: [{ id: "three-segmented", name: "Segmented" }],
   easy: [
-    { id: "easy-dot", name: "Dot + text" },
     { id: "easy-banner", name: "Banner" },
     { id: "easy-chip", name: "Chip" },
   ],
@@ -62,24 +51,13 @@ export const CAPTURED_RUNS: RunOption[] = [
   { id: "run-3", label: "Jun 20, 4:48 PM", status: "error" },
 ]
 
-// Pre-existing fake inline action results (the action has been run before).
-export const TEST_RESULTS: RunOption[] = [
-  { id: "act-1", label: "Action result · 3:40 PM", status: "success" },
-  { id: "act-2", label: "Action result · 11:02 AM", status: "success" },
-]
-
-// A fresh result produced by running the action now.
-export const NEW_ACTION_RESULT: RunOption = {
-  id: "act-new",
-  label: "Action result · just now",
+// The inline action is auto-run on open; there is only ever ONE step result,
+// and it only surfaces when there are no execution (test-run) results.
+export const STEP_RESULT: RunOption = {
+  id: "step-result",
+  label: "Step result · just now",
   status: "success",
 }
-
-export const ACTION_INPUTS: ActionInput[] = [
-  { key: "recordId", label: "Record ID", value: "rec_8842" },
-  { key: "limit", label: "Limit", value: "10" },
-  { key: "includeArchived", label: "Include archived", value: "false" },
-]
 
 const node = (
   key: string,
@@ -189,13 +167,6 @@ const realSource = (a: Availability): SourceDef => ({
   runs: CAPTURED_RUNS,
 })
 
-const testSource = (a: Availability): SourceDef => ({
-  kind: "test",
-  label: "Step",
-  available: a.inline,
-  reason: REASON.test,
-})
-
 const exampleSource = (a: Availability): SourceDef => ({
   kind: "example",
   label: "Example",
@@ -204,9 +175,11 @@ const exampleSource = (a: Availability): SourceDef => ({
 })
 
 export const buildSources = (
-  presentation: Presentation,
+  _presentation: Presentation,
   a: Availability
-): SourceDef[] =>
-  presentation === "three"
-    ? [realSource(a), testSource(a), exampleSource(a)]
-    : [realSource(a), exampleSource(a)]
+): SourceDef[] => [realSource(a), exampleSource(a)]
+
+/* Auto-select the lowest-friction, highest-fidelity source.
+   test run → step (auto-run) → output schema / example → nothing */
+export const autoKind = (a: Availability): SourceKind | undefined =>
+  a.real ? "real" : a.inline ? "test" : a.schema || a.example ? "example" : undefined

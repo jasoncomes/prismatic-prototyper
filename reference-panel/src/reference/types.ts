@@ -2,20 +2,13 @@ export type SourceKind = "real" | "test" | "example"
 
 export type Provenance = "real" | "test" | "example"
 
-export type Presentation = "one" | "two" | "three" | "easy"
+export type Presentation = "one" | "easy"
+
+export type Audience = "ewb" | "lowcode"
 
 export type Variant =
   | "one-cascade"
-  | "one-popover"
   | "one-pill"
-  | "one-split"
-  | "one-breadcrumb"
-  | "two-seg-stacked"
-  | "two-seg-subtabs"
-  | "two-toggle"
-  | "two-dropdown"
-  | "three-segmented"
-  | "easy-dot"
   | "easy-banner"
   | "easy-chip"
 
