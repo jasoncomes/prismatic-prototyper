@@ -38,14 +38,21 @@ import { $isImplicitParagraphNode } from "./nodes/ImplicitParagraphNode";
  *   - elements keep the attributes an HTML email needs, and no others
  */
 
+/**
+ * Innermost first. `wrapFormat` reduces over this list wrapping each flag
+ * OUTSIDE the last, so the final entry ends up as the outermost tag.
+ *
+ * Bold last is deliberate: a bitmask carries no nesting order, so the
+ * serializer has to pick one, and `<b><i>x</i></b>` is the order authors
+ * write. `<i><b>x</b></i>` comes back re-nested, rendering identically.
+ */
 const FORMAT_TAGS: Array<[number, string]> = [
-  [IS_BOLD, "b"],
-  [IS_ITALIC, "i"],
-  [IS_STRIKETHROUGH, "s"],
-  [IS_UNDERLINE, "u"],
   [IS_CODE, "code"],
+  [IS_UNDERLINE, "u"],
+  [IS_STRIKETHROUGH, "s"],
+  [IS_ITALIC, "i"],
+  [IS_BOLD, "b"],
 ];
-
 const escapeText = (text: string): string =>
   text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -83,6 +90,40 @@ const contentOf = (node: LexicalNode): string => {
  * Walk a child list, grouping consecutive siblings that share a bitmask so the
  * wrapper is emitted once around the whole run.
  */
+/**
+ * Walk a child list, emitting shared formatting as ONE wrapper around the
+ * whole run and nesting the rest inside it.
+ *
+ * Grouping by exact bitmask equality is not enough. `<b>hi <i>there</i></b>`
+ * arrives as two nodes – "hi " bold, "there" bold+italic – and equality splits
+ * them, giving `<b>hi </b><i><b>there</b></i>`. It renders the same and it is
+ * not what the author wrote.
+ *
+ * So: take the bits every node in the run shares, emit those once, strip them,
+ * and recurse on what is left. The shared `b` becomes the outer tag and the
+ * italic falls inside it, which reproduces the original.
+ */
+const serializeRun = (
+  nodes: LexicalNode[],
+  formats: number[],
+  applied: number,
+): string => {
+  const shared = formats.reduce((acc, format) => acc & format, ~0) & ~applied;
+
+  if (shared === 0) {
+    // Nothing more in common: emit each node under its own remaining bits.
+    return nodes
+      .map((node, index) =>
+        wrapFormat(contentOf(node), formats[index] & ~applied),
+      )
+      .join("");
+  }
+
+  const inner = serializeRun(nodes, formats, applied | shared);
+
+  return wrapFormat(inner, shared);
+};
+
 const serializeChildren = (children: LexicalNode[]): string => {
   const out: string[] = [];
   let i = 0;
@@ -96,12 +137,18 @@ const serializeChildren = (children: LexicalNode[]): string => {
       continue;
     }
 
-    const run: string[] = [];
-    while (i < children.length && formatOf(children[i]) === format) {
-      run.push(contentOf(children[i]));
+    // A run is every adjacent formatted sibling, not only those whose bitmask
+    // matches exactly — sharing any bit is enough to share a wrapper.
+    const nodes: LexicalNode[] = [];
+    const formats: number[] = [];
+    while (i < children.length) {
+      const next = formatOf(children[i]);
+      if (next === null || next === 0) break;
+      nodes.push(children[i]);
+      formats.push(next);
       i += 1;
     }
-    out.push(wrapFormat(run.join(""), format));
+    out.push(serializeRun(nodes, formats, 0));
   }
 
   return out.join("");
