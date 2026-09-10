@@ -1,0 +1,51 @@
+{
+  "name": "rich-text-editor",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone harness for the rich-text editor open questions (Epic 37698). Same Lexical version as the Prismatic frontend.",
+  "prototype": {
+    "title": "Rich Text Editor",
+    "description": "One value through five representations, in HTML and Markdown: what the editor shows, what it saves, and what a recipient sees. Answers the review questions on chip nodes, the element allowlist, preview isolation and reference escaping.",
+    "tags": [
+      "lexical",
+      "html",
+      "markdown",
+      "references",
+      "escaping",
+      "email"
+    ]
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "verify": "node verify-glimmer.mjs && node verify-escaping.mjs && node verify-format.mjs && node verify-roundtrip.mjs && node verify-variants.mjs",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run verify"
+  },
+  "dependencies": {
+    "@lexical/code": "0.32.1",
+    "@lexical/html": "0.32.1",
+    "@lexical/link": "0.32.1",
+    "@lexical/list": "0.32.1",
+    "@lexical/markdown": "0.32.1",
+    "@lexical/react": "0.32.1",
+    "@lexical/rich-text": "0.32.1",
+    "@lexical/selection": "0.32.1",
+    "@lexical/table": "0.32.1",
+    "lexical": "0.32.1",
+    "lodash": "^4.18.1",
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.25",
+    "@types/react": "17.0.83",
+    "@types/react-dom": "17.0.26",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^28.1.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}
