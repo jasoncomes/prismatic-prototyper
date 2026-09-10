@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { OneValue } from "./OneValue";
+import { TypeFinding } from "./TypeFinding";
 import { PreviewIsolation } from "./PreviewIsolation";
 import {
   CONFIG_VAR_TOKENS,
@@ -139,6 +140,7 @@ export const App = () => {
         }
       >
         <OneValue escaping={escaping} />
+        <TypeFinding />
       </Section>
 
       <Section

@@ -448,3 +448,41 @@ span.editor-html-element { padding: 0 3px; margin: 0; display: inline; }
   padding: 14px; min-height: 90px; width: 100%; overflow-x: auto;
 }
 iframe.preview-box { min-height: 240px; }
+
+/* ── a finding, not a control ────────────────────────────────────── */
+.finding {
+  margin: 22px 0 0;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.finding__hd {
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel2);
+  font-size: 0.8rem; letter-spacing: 0.04em; text-transform: uppercase;
+  font-weight: 600;
+}
+.finding__body { padding: 16px; }
+.finding__lede { margin: 0 0 14px; color: var(--soft); font-size: 0.92rem; max-width: 92ch; }
+.finding__grid { display: grid; gap: 14px; }
+@media (min-width: 760px) { .finding__grid { grid-template-columns: 1fr 1fr; } }
+.finding__col {
+  border: 1px solid var(--rule); border-radius: 8px;
+  background: #101317; padding: 12px 14px;
+}
+.finding__tag {
+  display: inline-block; margin-bottom: 9px;
+  font-family: var(--mono); font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.05em; padding: 2px 8px; border-radius: 20px;
+}
+.finding__tag.ok  { background: #1e2f28; color: var(--ok); }
+.finding__tag.bad { background: #35231f; color: var(--warn); }
+.finding__out {
+  display: block; background: none; padding: 0; color: var(--ink);
+  font-family: var(--mono); font-size: 0.8rem; line-height: 1.6;
+  word-break: break-word;
+}
+.finding__note { margin: 9px 0 0; color: var(--soft); font-size: 0.85rem; max-width: 100ch; }
+.finding__why { margin: 16px 0 0; font-size: 0.92rem; max-width: 92ch; }
