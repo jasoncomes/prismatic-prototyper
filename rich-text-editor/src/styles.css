@@ -39,28 +39,6 @@ code, .mono {
 .masthead { margin-bottom: 46px; }
 .masthead h1 { margin: 0 0 6px; font-size: 1.7rem; letter-spacing: -0.01em; }
 .masthead p { margin: 0 0 22px; color: var(--soft); max-width: 84ch; }
-.masthead__runs { font-size: 0.9rem; margin-top: -12px; }
-
-.sdk {
-  background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: 10px;
-  padding: 13px 16px;
-  margin: 20px 0 0;
-}
-.sdk__lbl {
-  display: block;
-  font-size: 0.68rem; letter-spacing: 0.09em; text-transform: uppercase;
-  color: var(--accent); font-weight: 600; margin-bottom: 8px;
-}
-.sdk__code {
-  margin: 0; padding: 11px 13px;
-  background: #101317; border-radius: 6px;
-  font-family: var(--mono); font-size: 0.78rem; line-height: 1.65;
-  color: var(--ink); overflow-x: auto;
-}
-.sdk__note { margin: 10px 0 0; color: var(--soft); font-size: 0.86rem; max-width: 96ch; }
-.sdk__note b { color: var(--ink); }
 
 .tokenbar {
   display: grid;
@@ -109,14 +87,6 @@ code, .mono {
 .tokens__was { margin-left: 8px; font-size: 0.8rem; color: var(--soft); }
 .tokens__was code { background: none; padding: 0; color: var(--soft); }
 
-.tokenbar__toggle {
-  margin-left: 10px;
-  background: var(--panel2); color: var(--accent);
-  border: 1px solid var(--accent); border-radius: 20px;
-  padding: 1px 9px; font-size: 0.68rem; font-family: var(--mono);
-  letter-spacing: 0.04em; text-transform: none; cursor: pointer;
-}
-.tokenbar__toggle.on { background: #1e2f28; border-color: #2f6b57; color: var(--ok); }
 .tokens__note { display: block; margin-top: 3px; font-size: 0.82rem; }
 
 /* ── sections ───────────────────────────────────────────────────── */
@@ -136,13 +106,6 @@ code, .mono {
   margin-top: 2px;
 }
 .sec__hd h2 { margin: 0; font-size: 1.22rem; letter-spacing: -0.005em; }
-.sec__asked {
-  margin: 5px 0 0;
-  color: var(--soft);
-  font-size: 0.9rem;
-  font-style: italic;
-  max-width: 92ch;
-}
 .sec__answer {
   margin: 0 0 20px 44px;
   padding: 11px 15px;
@@ -246,7 +209,6 @@ code, .mono {
   font-size: 0.75rem; letter-spacing: 0.05em;
   text-transform: uppercase; color: var(--soft);
 }
-.blurb { color: var(--soft); margin: 12px 0 20px; max-width: 88ch; }
 .hint { color: var(--soft); font-size: 0.88rem; margin: 12px 0 0; }
 
 /* ── one value, five panes ──────────────────────────────────────── */

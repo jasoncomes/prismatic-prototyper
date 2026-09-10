@@ -11,13 +11,11 @@ import {
 const Section = ({
   n,
   question,
-  asked,
   answer,
   children,
 }: {
   n: string;
   question: string;
-  asked?: string;
   answer: ReactNode;
   children: ReactNode;
 }) => (
@@ -26,9 +24,6 @@ const Section = ({
       <span className="sec__n">{n}</span>
       <div>
         <h2>{question}</h2>
-        {asked ? (
-          <p className="sec__asked">Raised in review: “{asked}”</p>
-        ) : null}
       </div>
     </div>
     <div className="sec__answer">
@@ -65,36 +60,6 @@ export const App = () => {
           the real editor. Every answer was produced by running the code on this
           page rather than reasoning about it.
         </p>
-        <p className="masthead__runs">
-          The same checks run headlessly with <code>npm run verify</code>:{" "}
-          <code>verify-format</code> (the indenter is lossless and idempotent) ·{" "}
-          <code>verify-roundtrip</code> (the tech doc's stored-value table) ·{" "}
-          <code>verify-variants</code> (why the chip is this node and not another)
-        </p>
-        {/*
-          Where the chain actually starts. Everything downstream is a
-          consequence of this declaration, and two of its properties are the
-          ones people get wrong.
-        */}
-        <div className="sdk">
-          <span className="sdk__lbl">the component author declares</span>
-          <pre className="sdk__code">{`input({
-  label: "HTML",
-  type: "code",        // there is no type: "html" in spectral
-  language: "html",    // a highlighting hint — it never reaches the runner
-  clean: util.types.toString,   // the only coercion in the whole chain
-})`}</pre>
-          <p className="sdk__note">
-            Real usage across the components repo: <b>7</b> inputs declare{" "}
-            <code>language: "html"</code> and <b>0</b> declare{" "}
-            <code>markdown</code>; <code>json</code> accounts for <b>788</b>.
-            <code>clean</code> is opt-in and the author's to pull —{" "}
-            <code>util.types.toString</code> is <code>{"`${value ?? \"\"}`"}</code>,
-            so an object-valued reference arrives as{" "}
-            <code>"[object Object]"</code>.
-          </p>
-        </div>
-
         <div className="tokenbar">
           <span className="tokenbar__lbl">
             every token, and what a test run substitutes for it
@@ -161,7 +126,6 @@ export const App = () => {
       <Section
         n="1"
         question="The editor"
-        asked="I think this might cause problems with selection, keyboard nav… You need it to be a decorator node to inject arbitrary components into the Lexical output"
         answer={
           <>
             <p>
@@ -170,11 +134,6 @@ export const App = () => {
               <code>exportDOM</code>. The panel below runs one value through five
               representations and reports whether the value that comes out
               matches the one that went in.
-            </p>
-            <p>
-              Unresolved: a decorator cannot be a selection endpoint, so a chip
-              cannot hold a caret. Markdown has no underline syntax, so that one
-              format is dropped on save.
             </p>
           </>
         }
@@ -185,7 +144,6 @@ export const App = () => {
       <Section
         n="2"
         question="The preview"
-        asked="I kind of wonder if our preview needs to render these in an isolated shadow DOM that doesn't inherit any styles from the main page, so they see the unstyled preview"
         answer={
           <>
             <p>
@@ -197,11 +155,6 @@ export const App = () => {
           </>
         }
       >
-        <p className="blurb">
-          Kept separate from the editor because it is a separate surface – the
-          same renderer is used elsewhere in the product, so whatever is decided
-          here lands in more than one place.
-        </p>
         <PreviewIsolation />
       </Section>
     </div>
