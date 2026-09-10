@@ -262,9 +262,6 @@ code, .mono {
 .ov__pane--output.is-whitespace { border-color: #6b6033; }
 .ov__pane--output.is-changed    { border-color: #6b3b32; }
 
-.seg--tiny button {
-  padding: 1px 8px; font-size: 0.7rem; font-family: var(--mono);
-}
 .ov__note--error { color: var(--warn); }
 .ov__note--error code { background: #35231f; color: var(--warn); }
 

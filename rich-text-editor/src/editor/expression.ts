@@ -19,19 +19,22 @@
 export type SimpleInputType = "value" | "reference" | "configVar" | "template";
 
 export interface InputExpression {
+  /**
+   * The new editor always writes `template`, and does not offer the choice.
+   *
+   * `value` hands the string to the component verbatim, so a reference
+   * inserted into one ships as literal braces. `reference` and `configVar`
+   * hold a bare path or key rather than markup, so there is no rich text to
+   * edit in either. That leaves exactly one type this editor can correctly
+   * produce.
+   *
+   * The union keeps its other members because they describe what the PLATFORM
+   * stores — a value authored elsewhere still arrives as one of them.
+   */
   type: SimpleInputType;
   value: string;
   meta?: Record<string, unknown>;
 }
-
-/**
- * The two types a rich-text input can plausibly hold.
- *
- * `reference` and `configVar` store a bare path or key rather than markup, so
- * they replace the whole input instead of appearing inside it — there is no
- * rich text to edit in either case.
- */
-export const RICH_TEXT_TYPES: SimpleInputType[] = ["template", "value"];
 
 /**
  * A double-quoted YAML scalar, the way PyYAML writes one.

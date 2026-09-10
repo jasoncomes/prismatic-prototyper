@@ -313,8 +313,23 @@ on that `type` before anything else:
 **A code input is created as `type: "value"`** (`getInputExpression.ts:19`), and nothing infers
 otherwise from its content. So an editor that writes tokens without also setting the type produces
 markup that looks correct in every preview built from the stored string and fails on the first real
-run. Pane 5 shows the envelope and carries a `value` / `template` switch, because that is the one
-decision the harness could not previously express.
+run.
+
+**Decided: the new editor always writes `template`, and does not offer the choice.** An editor whose
+whole affordance is inserting references cannot be allowed to write the one type that makes them
+inert. Pane 5 shows the envelope so the type is visible, but there is no switch — it is not a
+decision the author should be making.
+
+Two things that follow, and both need saying in the doc:
+
+- **This must not be extended to `code` generally.** `handlebars` and `liquid` are code languages
+  whose block syntax starts with `{{#`, the same prefix glimmer uses for config variables. Verified
+  against the real package: `{{#if user}}hi{{/if}}` as a template **throws**, and the runner
+  swallows that to `undefined` — the whole input silently vanishes. Only `html` and `markdown` are
+  safe to default this way; `json` is already excluded by EWB.
+- **`template` contributes step dependencies and `value` does not** (`versions/utils.py:251-256`).
+  Converting an existing input can therefore reorder a flow, or surface a cycle that was invisible
+  while the edge did not exist. A one-word type change is not purely cosmetic.
 
 The two builders also disagree about when `template` is even offered. EWB gates by language —
 `doesCodeLanguageSupportTemplates = (language) => language !== "json"`, a **denylist**, so html and

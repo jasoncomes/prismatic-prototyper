@@ -9,8 +9,6 @@ import { useState } from "react";
 import {
   ChipPanelProvider,
   type InputExpression,
-  RICH_TEXT_TYPES,
-  type SimpleInputType,
   toStoredYaml,
   type Dialect,
   DIALECTS,
@@ -38,8 +36,6 @@ import { useStoredValue } from "./useStoredValue";
  */
 const Panes = ({
   dialect,
-  expressionType,
-  onExpressionTypeChange,
   escaping,
   initial,
   onInitialChange,
@@ -47,8 +43,6 @@ const Panes = ({
   loadNonce,
 }: {
   dialect: Dialect;
-  expressionType: SimpleInputType;
-  onExpressionTypeChange: (type: SimpleInputType) => void;
   /**
    * Option A on or off, owned by the token table so the control sits with the
    * values it acts on. It changes pane 4 and nothing else – the stored value
@@ -86,11 +80,18 @@ const Panes = ({
   };
 
   /**
-   * The envelope the editor would write. `value` is the default a code input is
-   * created with, and it is what makes the tokens inert — the switch beside
-   * pane 5 is the whole point.
+   * The envelope the editor writes.
+   *
+   * Always `template`. A code input is *created* as `type: "value"` today, and
+   * a value expression is handed to the component verbatim — so a reference
+   * chip inserted into one is delivered as literal braces. An editor whose
+   * whole affordance is inserting references cannot write the one type that
+   * makes them inert, so the new editor commits to template.
+   *
+   * The type is not offered as a choice here because it is not a choice the
+   * author should be making.
    */
-  const expression: InputExpression = { type: expressionType, value: saved };
+  const expression: InputExpression = { type: "template", value: saved };
   const rendered = dialect.preview(expression, escaping);
 
 
@@ -236,23 +237,6 @@ const Panes = ({
         <div className={`ov__pane ov__pane--output is-${verdict}`}>
           <div className="ov__hd">
             <span className="ov__n">5</span> Saved value
-            <div className="seg seg--tiny">
-              {RICH_TEXT_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  className={expressionType === type ? "on" : ""}
-                  onClick={() => onExpressionTypeChange(type)}
-                  title={
-                    type === "value"
-                      ? "The default for a code input. Tokens are delivered as literal characters."
-                      : "The only type that substitutes."
-                  }
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
             <span className={`ov__verdict ${verdict}`}>
               {verdict === "identical"
                 ? "byte-identical to 1"
@@ -290,13 +274,6 @@ const Panes = ({
 };
 
 export const OneValue = ({ escaping }: { escaping: boolean }) => {
-  /**
-   * A code input is created as `value` — see `getInputExpression.ts`, where the
-   * whole field-type map defaults to it. Starting the harness on `template`
-   * would hide the failure this switch exists to show, so it starts where the
-   * platform starts.
-   */
-  const [expressionType, setExpressionType] = useState<SimpleInputType>("template");
   const [dialectId, setDialectId] = useState<DialectId>("html");
   const dialect = DIALECTS[dialectId];
   const fixtures = FIXTURES[dialectId];
@@ -374,8 +351,6 @@ export const OneValue = ({ escaping }: { escaping: boolean }) => {
         <ChipPanelProvider>
           <Panes
             dialect={dialect}
-            expressionType={expressionType}
-            onExpressionTypeChange={setExpressionType}
             escaping={escaping}
             initial={initial}
             onInitialChange={setInitial}

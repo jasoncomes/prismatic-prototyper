@@ -32,7 +32,6 @@ export {
 } from "./dialects";
 export {
   type InputExpression,
-  RICH_TEXT_TYPES,
   type SimpleInputType,
   toStoredYaml,
 } from "./expression";
