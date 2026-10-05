@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FAQ — Rich Text Demo</title>
+<style>
+ :root{color-scheme:light dark}
+ body{margin:0;background:#f4f6f8;color:#1a1d23;font:16px/1.65 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+ .bar{background:#0f2f4f;color:#fff;padding:10px 20px;font:12px/1.5 ui-monospace,Menlo,monospace}
+ .bar a{color:#9ecfc9}
+ main{max-width:760px;margin:0 auto;padding:32px 20px 64px}
+ article{background:#fff;border:1px solid #dde3ea;border-radius:6px;padding:28px}
+ img{max-width:100%}
+ table{max-width:100%}
+ pre{overflow-x:auto}
+ @media(prefers-color-scheme:dark){
+   body{background:#15181c;color:#e8ecf1}
+   article{background:#1c2026;border-color:#2e343c}
+ }
+</style>
+</head>
+<body>
+<div class="bar">rendered by the Prismatic runner &middot; config variable values arrive unescaped &middot; <a href="./index.html">all pages</a></div>
+<main><article>
+<h1>Questions</h1>
+<h3>Is there a free tier?</h3>
+<p>Yes, for development. Production instances need a paid plan.</p>
+<h3>Can I self-host?</h3>
+<p>Yes, on your own cloud account. The runner and the control plane deploy separately.</p>
+<h3>What happens to my data?</h3>
+<ul>
+  <li>Execution payloads are retained for 30 days</li>
+  <li>Logs are retained for 30 days</li>
+  <li>Credentials are encrypted at rest and never logged</li>
+</ul>
+<h3>How do I report a problem?</h3>
+<ol>
+  <li>Check the status page</li>
+  <li>Search the docs</li>
+  <li>Open a ticket with the execution ID</li>
+</ol>
+<blockquote style="border-left:3px solid #d7dce1;margin:20px 0;padding:4px 0 4px 16px;color:#4a5159">
+  <p style="margin:0">Tip: the execution ID is on every test run, under the trigger output.</p>
+</blockquote>
+<hr>
+<p style="color:#767f8a;font-size:12px">Last reviewed October 2026.</p>
+</article></main>
+</body>
+</html>

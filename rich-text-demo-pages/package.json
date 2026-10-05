@@ -1,0 +1,18 @@
+{
+  "name": "rich-text-demo-pages",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "prototype": {
+    "title": "Rich Text Demo — Published Pages",
+    "description": "Ten web pages authored in the rich text editor and rendered by the Prismatic runner, showing how config variable values arrive in delivered markup.",
+    "tags": [
+      "rich-text",
+      "escaping",
+      "SC-39075"
+    ]
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

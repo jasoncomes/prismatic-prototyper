@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Report — Rich Text Demo</title>
+<style>
+ :root{color-scheme:light dark}
+ body{margin:0;background:#f4f6f8;color:#1a1d23;font:16px/1.65 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
+ .bar{background:#0f2f4f;color:#fff;padding:10px 20px;font:12px/1.5 ui-monospace,Menlo,monospace}
+ .bar a{color:#9ecfc9}
+ main{max-width:760px;margin:0 auto;padding:32px 20px 64px}
+ article{background:#fff;border:1px solid #dde3ea;border-radius:6px;padding:28px}
+ img{max-width:100%}
+ table{max-width:100%}
+ pre{overflow-x:auto}
+ @media(prefers-color-scheme:dark){
+   body{background:#15181c;color:#e8ecf1}
+   article{background:#1c2026;border-color:#2e343c}
+ }
+</style>
+</head>
+<body>
+<div class="bar">rendered by the Prismatic runner &middot; config variable values arrive unescaped &middot; <a href="./index.html">all pages</a></div>
+<main><article>
+<h1 style="color:#0f2f4f">Q4 &amp; Beyond</h1>
+<p>Prepared for <strong>Procter & Gamble</strong> on the Build & Deploy plan.</p>
+<p>Owner: Dana Whitfield.</p>
+<h2>Summary</h2>
+<table width="100%" cellpadding="8" cellspacing="0" border="1" style="border-collapse:collapse">
+  <thead><tr style="background:#f4f6f8"><th align="left">Measure</th><th align="right">Value</th><th align="right">Change</th></tr></thead>
+  <tbody>
+    <tr><td>Executions</td><td align="right">128,440</td><td align="right" style="color:#1f6f4a">+7.9&nbsp;%</td></tr>
+    <tr><td>Error rate</td><td align="right">0.21&nbsp;%</td><td align="right" style="color:#1f6f4a">&minus;0.04&nbsp;pt</td></tr>
+    <tr><td>Spend</td><td align="right">$1,240</td><td align="right" style="color:#a8322a">+3.1&nbsp;%</td></tr>
+  </tbody>
+</table>
+<h2>Notes</h2>
+<ol>
+  <li>The error rate improvement follows the runner upgrade</li>
+  <li>Spend tracks execution volume, as expected</li>
+</ol>
+<p><a href="https://example.com/launch">Download the full report</a></p>
+</article></main>
+</body>
+</html>
