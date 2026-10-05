@@ -3,44 +3,134 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Landing page — Rich Text Demo</title>
+<title>Landing page &middot; Prismatic</title>
+<meta name="description" content="Landing page, authored in the rich text editor and rendered by the Prismatic runner.">
 <style>
- :root{color-scheme:light dark}
- body{margin:0;background:#f4f6f8;color:#1a1d23;font:16px/1.65 -apple-system,Segoe UI,Helvetica,Arial,sans-serif}
- .bar{background:#0f2f4f;color:#fff;padding:10px 20px;font:12px/1.5 ui-monospace,Menlo,monospace}
- .bar a{color:#9ecfc9}
- main{max-width:760px;margin:0 auto;padding:32px 20px 64px}
- article{background:#fff;border:1px solid #dde3ea;border-radius:6px;padding:28px}
- img{max-width:100%}
- table{max-width:100%}
- pre{overflow-x:auto}
- @media(prefers-color-scheme:dark){
-   body{background:#15181c;color:#e8ecf1}
-   article{background:#1c2026;border-color:#2e343c}
- }
+  :root{
+    --paper:#ffffff; --ground:#f4f6f8; --ink:#14181d; --ink-2:#4b545e; --ink-3:#79838f;
+    --line:#dde3ea; --brand:#0f2f4f; --accent:#0f7b6c;
+    color-scheme:light dark;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --paper:#1b1f25; --ground:#12151a; --ink:#e9edf2; --ink-2:#b3bdc8; --ink-3:#8793a0;
+           --line:#2e343c; --brand:#0b1d31; --accent:#53b9ac; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);
+       font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+  a{color:var(--accent)}
+  .masthead{background:var(--brand);color:#fff}
+  .masthead .in{max-width:1040px;margin:0 auto;padding:16px 24px;
+                display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .masthead .mark{font-weight:600;font-size:17px;letter-spacing:-.01em;color:#fff;text-decoration:none}
+  .masthead nav{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
+  .masthead nav a{color:#c5d6e4;text-decoration:none;font-size:14px}
+  .masthead nav a:hover{color:#fff}
+  .crumb{background:var(--paper);border-bottom:1px solid var(--line)}
+  .crumb .in{max-width:1040px;margin:0 auto;padding:10px 24px;font-size:13px;color:var(--ink-3)}
+  main{max-width:820px;margin:0 auto;padding:36px 24px 64px}
+  article{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:clamp(22px,4vw,44px)}
+  article > :first-child{margin-top:0}
+  article h1{font-size:clamp(28px,5vw,40px);line-height:1.15;letter-spacing:-.02em;margin:0 0 18px}
+  article h2{font-size:clamp(21px,3.4vw,27px);line-height:1.25;margin:34px 0 12px}
+  article h3{font-size:19px;margin:26px 0 10px}
+  article h4{font-size:16px;margin:22px 0 8px;color:var(--ink-2)}
+  article p{margin:0 0 14px;color:var(--ink-2)}
+  article li{color:var(--ink-2);margin:0 0 6px}
+  article img{max-width:100%;height:auto;border-radius:6px}
+  article table{border-collapse:collapse;width:100%;font-size:15px;margin:0 0 16px;display:block;overflow-x:auto}
+  article th,article td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+  article th{background:var(--ground);font-size:13px;letter-spacing:.02em}
+  article pre{background:var(--ground);border:1px solid var(--line);border-radius:6px;
+              padding:14px 16px;overflow-x:auto;font-size:14px;margin:0 0 16px}
+  article code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;
+               background:var(--ground);padding:2px 5px;border-radius:3px}
+  article pre code{background:none;padding:0}
+  article blockquote{margin:18px 0;padding:2px 0 2px 18px;border-left:3px solid var(--accent);color:var(--ink-2)}
+  article hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+  .colophon{max-width:820px;margin:0 auto;padding:0 24px 64px;
+            font:13px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
+  .colophon b{color:var(--ink-2);font-weight:500}
+  footer{background:var(--brand);color:#c5d6e4}
+  footer .in{max-width:1040px;margin:0 auto;padding:26px 24px;font-size:14px;
+             display:flex;gap:18px;justify-content:space-between;flex-wrap:wrap}
+  footer a{color:#fff}
 </style>
 </head>
 <body>
-<div class="bar">rendered by the Prismatic runner &middot; config variable values arrive unescaped &middot; <a href="./index.html">all pages</a></div>
-<main><article>
-<div style="text-align:center;padding:16px 0">
-  <h1 style="margin:0 0 8px;font-size:34px">Prismatic for teams</h1>
-  <p style="color:#4a5159;font-size:17px;margin:0 0 24px">Build once, deploy to every customer.</p>
-  <p><a href="https://example.com/launch" style="background:#0f7b6c;color:#fff;padding:14px 28px;display:inline-block;text-decoration:none;border-radius:3px">Start building</a></p>
-</div>
-<hr style="border:0;border-top:1px solid #d7dce1;margin:32px 0">
-<table width="100%" cellpadding="12" cellspacing="0">
-  <tr valign="top">
-    <td width="33%"><h3 style="margin:0 0 6px">Author</h3><p style="margin:0;color:#4a5159">Rich text, code and references in one editor.</p></td>
-    <td width="33%"><h3 style="margin:0 0 6px">Configure</h3><p style="margin:0;color:#4a5159">One integration, a config var per customer.</p></td>
-    <td width="33%"><h3 style="margin:0 0 6px">Deploy</h3><p style="margin:0;color:#4a5159">Instances for Procter & Gamble in minutes.</p></td>
-  </tr>
+
+<header class="masthead">
+  <div class="in">
+    <a class="mark" href="./index.html">Prismatic</a>
+    <nav>
+      <a href="./landing-page.html">Product</a>
+      <a href="./pricing.html">Pricing</a>
+      <a href="./docs-article.html">Docs</a>
+      <a href="./changelog.html">Changelog</a>
+      <a href="./status-page.html">Status</a>
+      <a href="./index.html">All pages</a>
+    </nav>
+  </div>
+</header>
+
+<div class="crumb"><div class="in">Home &rsaquo; Landing page</div></div>
+
+<main>
+  <article>
+<h1>Prismatic for teams that ship integrations</h1>
+<p>Build an integration once. Deploy it to every customer, each configured their own way, without
+forking anything. Procter & Gamble went from forty forks to one.</p>
+<p><a href="https://example.com/launch">Start building</a> &middot; <a href="https://example.com/launch">Book a walkthrough</a></p>
+
+<hr>
+
+<h2>What you get</h2>
+<table>
+  <thead><tr><th>Capability</th><th>What it means</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Author</strong></td><td>Rich text, code and references in one editor, with a preview that resolves like the runner</td></tr>
+    <tr><td><strong>Configure</strong></td><td>One integration, a configuration variable per customer difference</td></tr>
+    <tr><td><strong>Deploy</strong></td><td>Instances for Procter & Gamble in minutes, self-served through the marketplace</td></tr>
+    <tr><td><strong>Observe</strong></td><td>Execution history, logs and replay for every run</td></tr>
+  </tbody>
 </table>
-<hr style="border:0;border-top:1px solid #d7dce1;margin:32px 0">
-<blockquote style="border-left:4px solid #0f7b6c;margin:0;padding:8px 0 8px 20px;color:#0f2f4f">
-  <p style="margin:0">He said "hi" & left</p>
-  <footer style="margin-top:8px;font-size:14px;color:#4a5159">&mdash; Dana Whitfield</footer>
+
+<h2>Built for the whole team</h2>
+<ul>
+  <li><strong>Integration engineers</strong> get a code-native path with the full software development kit</li>
+  <li><strong>Solutions teams</strong> get a low-code designer that produces the same artifact</li>
+  <li><strong>Customers</strong> get a marketplace that looks like your product, not ours</li>
+</ul>
+
+<h2>What customers say</h2>
+<blockquote>
+  <p>He said "hi" & left</p>
+  <p>&mdash; Dana Whitfield, Procter & Gamble</p>
 </blockquote>
-</article></main>
+
+<h2>Pricing in one line</h2>
+<p>You pay for deployed instances, not seats. The Build & Deploy plan starts at $1,240 per
+month. See the <a href="https://example.com/launch">full comparison</a>.</p>
+
+<hr>
+<h2>Ready?</h2>
+<p>Development is free and unlimited. You only pay when an instance goes to production.</p>
+<p><a href="https://example.com/launch">Start building</a></p>
+  </article>
+</main>
+
+<div class="colophon">
+  <b>page</b> /landing-page &middot; authored in the rich text editor<br>
+  <b>rendered by</b> the Prismatic runner, which splices configuration variable values verbatim<br>
+  <b>note</b> every ampersand and quotation mark supplied by a configuration variable on this page is unescaped
+</div>
+
+<footer>
+  <div class="in">
+    <span>Prismatic &middot; rich text demo</span>
+    <span><a href="./index.html">All pages</a></span>
+  </div>
+</footer>
+
 </body>
 </html>
