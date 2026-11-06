@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orby</title>
+  </head>
+  <body>
+    <canvas id="orby" aria-label="Orby, Prismatic's round mascot, floating in a dark room and watching you"></canvas>
+    <div class="controls">
+    <nav class="pill moods" aria-label="Orby's mood">
+      <button type="button" data-mood="auto">Auto</button>
+      <button type="button" data-mood="calm">Calm</button>
+      <button type="button" data-mood="happy">Happy</button>
+      <button type="button" data-mood="angry">Angry</button>
+      <button type="button" data-mood="sad">Sad</button>
+      <button type="button" data-mood="surprised">Surprised</button>
+      <button type="button" data-mood="sleepy">Sleepy</button>
+      <button type="button" data-mood="love">Love</button>
+    </nav>
+    <nav class="pill follow" aria-label="How Orby follows you">
+      <button type="button" data-follow="drag">Drag</button>
+      <button type="button" data-follow="always">Follow mouse</button>
+    </nav>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

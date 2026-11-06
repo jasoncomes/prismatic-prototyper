@@ -1,0 +1,74 @@
+/* Orby fills the window; the room behind it is the palette's background, drawn by WebGL */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #02080d;
+  overflow: hidden;
+}
+
+#orby {
+  display: block;
+  width: 100vw;
+  height: 100dvh;
+  touch-action: none;
+}
+
+/* drag mode: the canvas is something you grab */
+.dragging #orby {
+  cursor: grab;
+}
+
+.dragging #orby:active {
+  cursor: grabbing;
+}
+
+/* the controls: two quiet pills at the bottom, above the safe area */
+.controls {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+}
+
+.pill {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgb(10 30 42 / 0.72);
+  border: 1px solid rgb(95 224 208 / 0.18);
+  backdrop-filter: blur(8px);
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.pill button {
+  font: inherit;
+  color: #b9dfe4;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.pill button[aria-pressed="true"] {
+  background: #2b86b8;
+  color: #fff;
+}
+
+.pill button:focus-visible {
+  outline: 2px solid #5fe0d0;
+  outline-offset: 2px;
+}
